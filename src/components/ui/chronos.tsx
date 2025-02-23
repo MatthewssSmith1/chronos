@@ -8,20 +8,28 @@ import { Button } from "./button"
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-type Event = {
+type ChronosCategory = {
+  id: string | number
+  name: string
+  color: string
+}
+
+type ChronosEvent = {
   id: string | number
   title: string
   start: Date
   end: Date
-  description?: string
   location?: string
-  calendar?: string
+  description?: string
+  category_id?: string | number
 }
 
 const VIEWS = ["day", "week", "month", "year", "list"] as const
 type ViewType = typeof VIEWS[number]
 
 type ChronosContextType = {
+  events: ChronosEvent[]
+  categories: ChronosCategory[]
   viewType: ViewType
   selectedDate: Date
   setViewType: (type: ViewType) => void
@@ -32,7 +40,15 @@ type ChronosContextType = {
 
 const ChronosContext = React.createContext<ChronosContextType | undefined>(undefined)
 
-function ChronosProvider({ children }: { children: React.ReactNode }) {
+function ChronosProvider({ 
+  children, 
+  events,
+  categories 
+}: { 
+  children: React.ReactNode
+  events: ChronosEvent[]
+  categories: ChronosCategory[]
+}) {
   const [selectedDate, setSelectedDate] = React.useState<Date>(new Date())
   const [viewType, setViewType] = React.useState<ViewType>("week")
 
@@ -81,6 +97,8 @@ function ChronosProvider({ children }: { children: React.ReactNode }) {
 
   const value = React.useMemo(
     () => ({
+      events,
+      categories,
       viewType,
       selectedDate,
       setViewType,
@@ -88,7 +106,7 @@ function ChronosProvider({ children }: { children: React.ReactNode }) {
       offsetPeriod,
       goToToday,
     }),
-    [viewType, selectedDate, offsetPeriod, goToToday]
+    [events, categories, viewType, selectedDate, offsetPeriod, goToToday]
   )
 
   return <ChronosContext.Provider value={value}>{children}</ChronosContext.Provider>
@@ -149,7 +167,7 @@ function TimePeriodText() {
     }
   }
 
-  return <h1 className="text-2xl font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{getText()}</h1>
+  return <h1 className="text-2xl font-semibold truncate">{getText()}</h1>
 }
 
 function DateNavigator() {
@@ -175,7 +193,7 @@ function DateNavigator() {
       <Segment onClick={() => offsetPeriod(-1)}>
         <ChevronLeftIcon className="size-4 pointer-events-none shrink-0" />
       </Segment>
-      <Segment onClick={goToToday}>Today</Segment>
+      <Segment onClick={goToToday} className="hidden sm:inline-block">Today</Segment>
       <Segment onClick={() => offsetPeriod(1)}>
         <ChevronRightIcon className="size-4 pointer-events-none shrink-0" />
       </Segment>
@@ -226,4 +244,4 @@ function ViewSelect() {
   )
 }
 
-export { ChronosProvider, Chronos, useChronos, ViewType }
+export { ChronosProvider, Chronos, useChronos, ViewType, ChronosEvent, ChronosCategory }

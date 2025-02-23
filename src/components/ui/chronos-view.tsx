@@ -1,10 +1,10 @@
 "use client"
 
-import { useChronos } from "./chronos"
+import { useChronos, ChronosEvent, ChronosCategory } from "./chronos"
+import { cn, formatTimeRange, formatTime } from "@/lib/utils"
 import { Calendar } from "./calendar"
 import * as React from "react"
 import { Card } from "./card"
-import { cn } from "@/lib/utils"
 
 function ChronosView() {
   const { viewType } = useChronos()
@@ -64,27 +64,67 @@ function DaysView({ dates, className }: { dates: Date[], className?: string }) {
   }
 
   function DayColumn({ date, isLast }: { date: Date, isLast?: boolean }) {
+    const { events, categories } = useChronos()
+    
+    const dayEvents = React.useMemo(
+      () => events.filter(event => event.start.toDateString() === date.toDateString()), 
+      [events, date]
+    )
+
     return (
       <div className={cn(
-        "flex-1 flex flex-col h-full",
+        "flex-1 flex flex-col h-full relative",
         !isLast && "border-r",
         isLast && "rounded-br-md"
       )}>
+        {dayEvents.map(event => <EventCard key={event.id} event={event} category={categories.find(cat => cat.id === event.category_id)!} />)}
       </div>
     )
   }
+
 
   return (
     <Card className={cn("flex-1 flex p-0 grid grid-rows-[auto_1fr] gap-0 isolate overflow-y-auto overflow-x-hidden", className)}>
       <div className="row-start-1 col-start-1" />
       {dates.map((date, idx) => (
-        <DateHeader key={idx} date={date} className="sticky top-0 z-20 py-2 bg-background/60 border-b" />
+        <DateHeader key={idx} date={date} className="sticky top-0 z-50 py-2 bg-background/80 border-b" />
       ))}
       <TimeColumn />
       {dates.map((date, idx) => (
         <DayColumn date={date} key={idx} isLast={idx === dates.length - 1} />
       ))}
     </Card>
+  )
+}
+
+function EventCard({ event, category }: { event: ChronosEvent, category: ChronosCategory }) {
+  const startHours = event.start.getHours() + (event.start.getMinutes() / 60)
+  const endHours = event.end.getHours() + (event.end.getMinutes() / 60)
+  const duration = endHours - startHours
+  const PADDING = 3
+
+  function Subtitle() {
+    let text = formatTimeRange(event.start, event.end)
+    if (event.location) text += ` @ ${event.location}`
+    return (
+      <p className="text-xs text-white truncate pointer-events-none">{text}</p>
+    )
+  }
+  
+  return (
+    <div
+      className="absolute z-40 rounded-md px-1.5 py-1 overflow-hidden cursor-pointer transition-all hover:brightness-110 hover:shadow-sm"
+      style={{
+        backgroundColor: category.color,
+        top: `${startHours * 75 + PADDING}px`,
+        height: `${duration * 75 - PADDING * 2}px`,
+        left: `${PADDING}px`,
+        right: `${PADDING}px`,
+      }}
+    >
+      <p className="text-sm text-white truncate pointer-events-none font-medium">{event.title}</p>
+      {duration > 0.5 && <Subtitle /> }
+    </div>
   )
 }
 
@@ -120,18 +160,38 @@ function MonthView() {
   )
 }
 
+function EventLine({ event, category }: { event: ChronosEvent, category: ChronosCategory }) {
+  return (
+    <div className="flex flex-row items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-primary/10 transition-colors text-xs font-medium [&>*]:pointer-events-none">
+      <div className="size-2 rounded-full shrink-0" style={{ backgroundColor: category.color }} />
+      <p className="text-muted-foreground">{formatTime(event.start)}</p>
+      <p className="truncate">{event.title}</p>
+    </div>
+  )
+}
+
 function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCount: number }) {
-  const { selectedDate } = useChronos()
+  const { selectedDate, events, categories } = useChronos()
 
   const currentMonth = date.getMonth() === selectedDate.getMonth()
   const [firstRow, lastRow] = [index < 7, index >= dayCount - 7]
   const [firstCol, lastCol] = [index % 7 === 0, index % 7 === 6]
   
+  // Get events for this day
+  const dayEvents = React.useMemo(() => {
+    return events.filter(event => {
+      const eventDate = new Date(event.start)
+      return eventDate.getDate() === date.getDate() &&
+             eventDate.getMonth() === date.getMonth() &&
+             eventDate.getFullYear() === date.getFullYear()
+    }).sort((a, b) => a.start.getTime() - b.start.getTime())
+  }, [events, date])
+  
   return (
     <div
       className={cn(
-        "flex flex-col h-full p-2 cursor-pointer",
-        currentMonth ? "bg-muted/40 hover:bg-muted/70" : "hover:bg-muted/60",
+        "flex flex-col h-full px-1 py-2 cursor-pointer hover:not-[&:has(>*:hover)]:bg-muted/70 transition-colors",
+        currentMonth && "bg-muted/40 ",
         !firstRow && "border-t",
         !firstCol && "border-l",
         firstRow && firstCol && "rounded-tl-md",
@@ -140,7 +200,16 @@ function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCoun
         lastRow && lastCol && "rounded-br-md",
       )}
     >
-      <DateHeader date={date} hideWeekday={!firstRow} />
+      <DateHeader date={date} hideWeekday={!firstRow} className="mb-1 pointer-events-none" />
+      <div className="flex flex-col gap-0.5">
+        {dayEvents.map(event => (
+          <EventLine 
+            key={event.id} 
+            event={event} 
+            category={categories.find(c => c.id === event.category_id) ?? categories[0]} 
+          />
+        ))}
+      </div>
     </div>
   )
 }

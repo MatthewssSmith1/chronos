@@ -1,5 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { Chronos, ChronosProvider } from '@/components/ui/chronos'
+import { EVENTS, CATEGORIES } from '@/lib/exampleData'
+import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
   component: HomeComponent,
@@ -8,7 +9,7 @@ export const Route = createFileRoute('/')({
 function HomeComponent() {
   return (
     <div className="h-screen">
-      <ChronosProvider>
+      <ChronosProvider events={EVENTS} categories={CATEGORIES}>
         <Chronos />
       </ChronosProvider>
     </div>
