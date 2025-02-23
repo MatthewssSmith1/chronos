@@ -1,5 +1,5 @@
-import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import { Chronos, ChronosProvider } from '@/components/ui/chronos'
 
 export const Route = createFileRoute('/')({
   component: HomeComponent,
@@ -7,8 +7,10 @@ export const Route = createFileRoute('/')({
 
 function HomeComponent() {
   return (
-    <div className="p-2">
-      <h3>Welcome Home!</h3>
+    <div className="h-screen">
+      <ChronosProvider>
+        <Chronos />
+      </ChronosProvider>
     </div>
   )
 }
