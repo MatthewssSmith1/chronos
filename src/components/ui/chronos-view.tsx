@@ -1,8 +1,12 @@
 "use client"
 
-import { useChronos, ChronosEvent, ChronosCategory } from "./chronos"
+import { useChronos, ChronosEvent, ChronosCategory, useDayEvents } from "./chronos"
 import { cn, formatTimeRange, formatTime } from "@/lib/utils"
+import { Popover, PopoverTrigger } from "./popover"
+import { EventForm } from "./event-form"
+import { PlusIcon } from "lucide-react"
 import { Calendar } from "./calendar"
+import { Button } from "./button"
 import * as React from "react"
 import { Card } from "./card"
 
@@ -50,7 +54,7 @@ function DaysView({ dates, className }: { dates: Date[], className?: string }) {
     const times = Array.from({ length: 24 }, (_, i) => `${(i % 12) + 1} ${i < 11 ? "AM" : "PM"}`)
     
     return (
-      <div className="w-18 relative [&>*]:h-[75px] [&>*]:relative [&>*:last-child>*:last-child]:hidden">
+      <div className="w-18 relative [&>*]:h-[75px] [&>*]:relative [&>*:last-child>*]:hidden">
         {times.map((time, i) => (
           <div key={i}>
             <div className="absolute right-1/2 bottom-0 translate-x-1/2 translate-y-[9px]">
@@ -64,12 +68,9 @@ function DaysView({ dates, className }: { dates: Date[], className?: string }) {
   }
 
   function DayColumn({ date, isLast }: { date: Date, isLast?: boolean }) {
-    const { events, categories } = useChronos()
+    const { categories } = useChronos()
     
-    const dayEvents = React.useMemo(
-      () => events.filter(event => event.start.toDateString() === date.toDateString()), 
-      [events, date]
-    )
+    const dayEvents = useDayEvents(date)
 
     return (
       <div className={cn(
@@ -77,11 +78,10 @@ function DaysView({ dates, className }: { dates: Date[], className?: string }) {
         !isLast && "border-r",
         isLast && "rounded-br-md"
       )}>
-        {dayEvents.map(event => <EventCard key={event.id} event={event} category={categories.find(cat => cat.id === event.category_id)!} />)}
+        {dayEvents.map(event => <EventCard key={event.id} event={event} category={categories.find(cat => cat.id === event.categoryId)!} />)}
       </div>
     )
   }
-
 
   return (
     <Card className={cn("flex-1 flex p-0 grid grid-rows-[auto_1fr] gap-0 isolate overflow-y-auto overflow-x-hidden", className)}>
@@ -162,35 +162,27 @@ function MonthView() {
 
 function EventLine({ event, category }: { event: ChronosEvent, category: ChronosCategory }) {
   return (
-    <div className="flex flex-row items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-primary/10 transition-colors text-xs font-medium [&>*]:pointer-events-none">
+    <div className="flex flex-row items-center justify-center sm:justify-start gap-1.5 px-1.5 py-0.5 rounded hover:bg-primary/10 transition-colors text-xs font-medium [&>*]:pointer-events-none">
       <div className="size-2 rounded-full shrink-0" style={{ backgroundColor: category.color }} />
-      <p className="text-muted-foreground">{formatTime(event.start)}</p>
-      <p className="truncate">{event.title}</p>
+      <p className="text-muted-foreground hidden md:inline-block">{formatTime(event.start)}</p>
+      <p className="truncate hidden sm:inline-block">{event.title}</p>
     </div>
   )
 }
 
 function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCount: number }) {
-  const { selectedDate, events, categories } = useChronos()
+  const { selectedDate, categories } = useChronos()
 
   const currentMonth = date.getMonth() === selectedDate.getMonth()
   const [firstRow, lastRow] = [index < 7, index >= dayCount - 7]
   const [firstCol, lastCol] = [index % 7 === 0, index % 7 === 6]
   
-  // Get events for this day
-  const dayEvents = React.useMemo(() => {
-    return events.filter(event => {
-      const eventDate = new Date(event.start)
-      return eventDate.getDate() === date.getDate() &&
-             eventDate.getMonth() === date.getMonth() &&
-             eventDate.getFullYear() === date.getFullYear()
-    }).sort((a, b) => a.start.getTime() - b.start.getTime())
-  }, [events, date])
+  const dayEvents = useDayEvents(date)
   
   return (
     <div
       className={cn(
-        "flex flex-col h-full px-1 py-2 cursor-pointer hover:not-[&:has(>*:hover)]:bg-muted/70 transition-colors",
+        "group flex flex-col h-full p-1 cursor-pointer hover:not-[&:has(>*:hover)]:bg-muted/70 transition-colors",
         currentMonth && "bg-muted/40 ",
         !firstRow && "border-t",
         !firstCol && "border-l",
@@ -200,15 +192,28 @@ function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCoun
         lastRow && lastCol && "rounded-br-md",
       )}
     >
-      <DateHeader date={date} hideWeekday={!firstRow} className="mb-1 pointer-events-none" />
+      <DateHeader date={date} hideWeekday={!firstRow} className="py-1 pointer-events-none" />
       <div className="flex flex-col gap-0.5">
         {dayEvents.map(event => (
           <EventLine 
             key={event.id} 
             event={event} 
-            category={categories.find(c => c.id === event.category_id) ?? categories[0]} 
+            category={categories.find(c => c.id === event.categoryId) ?? categories[0]} 
           />
         ))}
+        
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              className="h-6 w-full flex items-center justify-center rounded-sm bg-primary/5 hover:bg-primary/10 hover:shadow-sm opacity-0 group-hover:opacity-100 aria-expanded:opacity-100 transition-all"
+              onClick={() => console.log("Add event clicked")}
+            >
+              <PlusIcon />
+            </Button>
+          </PopoverTrigger>
+          <EventForm onSubmit={console.log} align="center" sideOffset={8} />
+        </Popover>
       </div>
     </div>
   )
@@ -263,7 +268,7 @@ function DateHeader({ date, hideWeekday = false, className }: { date: Date, hide
     const isToday = date.toDateString() === new Date().toDateString()
 
     return (
-      <div className={cn("size-7 mx-auto flex items-center justify-center rounded-full", isToday && "bg-primary")}>
+      <div className={cn("size-6 sm:size-7 mx-auto flex items-center justify-center rounded-full", isToday && "bg-primary")}>
         <p className={cn(textStyle, isToday && "text-primary-foreground")}>{date.getDate()}</p>
       </div>
     )

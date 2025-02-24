@@ -35,7 +35,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-20T09:00:00"),
     end: new Date("2025-02-20T11:00:00"),
     description: "Quarterly planning session with product team",
-    category_id: 1,
+    categoryId: 1,
     location: "Conference Room A"
   },
   {
@@ -44,7 +44,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-21T14:30:00"),
     end: new Date("2025-02-21T16:00:00"),
     description: "Regular checkup and cleaning",
-    category_id: 2,
+    categoryId: 2,
     location: "Dr. Smith's Dental Office"
   },
   {
@@ -53,7 +53,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-22T18:00:00"),
     end: new Date("2025-02-22T22:00:00"),
     description: "Sarah's 30th birthday celebration",
-    category_id: 3,
+    categoryId: 3,
     location: "The Local Bar & Grill"
   },
   {
@@ -62,7 +62,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-23T07:00:00"),
     end: new Date("2025-02-23T09:00:00"),
     description: "Personal training session",
-    category_id: 4,
+    categoryId: 4,
     location: "Fitness Plus Gym"
   },
   {
@@ -71,7 +71,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-24T13:00:00"),
     end: new Date("2025-02-24T15:30:00"),
     description: "Project progress review with stakeholders",
-    category_id: 1,
+    categoryId: 1,
     location: "Client HQ - Meeting Room 3"
   },
   {
@@ -80,7 +80,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-25T19:00:00"),
     end: new Date("2025-02-25T22:00:00"),
     description: "Watch new sci-fi release with friends",
-    category_id: 3,
+    categoryId: 3,
     location: "Cineplex Downtown"
   },
   {
@@ -89,7 +89,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-26T16:00:00"),
     end: new Date("2025-02-26T17:30:00"),
     description: "Mid-semester progress discussion",
-    category_id: 5,
+    categoryId: 5,
     location: "Lincoln Elementary School"
   },
   {
@@ -98,7 +98,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-27T10:00:00"),
     end: new Date("2025-02-27T13:00:00"),
     description: "React Advanced Patterns Workshop",
-    category_id: 1,
+    categoryId: 1,
     location: "Tech Hub - Training Room"
   },
   {
@@ -107,7 +107,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-28T11:00:00"),
     end: new Date("2025-02-28T12:30:00"),
     description: "Property viewing with real estate agent",
-    category_id: 2,
+    categoryId: 2,
     location: "123 Oak Street"
   },
   {
@@ -116,7 +116,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-28T15:00:00"),
     end: new Date("2025-02-28T16:30:00"),
     description: "Regular team status update",
-    category_id: 1,
+    categoryId: 1,
     location: "Conference Room B"
   },
   {
@@ -125,7 +125,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-01T07:00:00"),
     end: new Date("2025-02-01T08:00:00"),
     description: "Morning yoga session",
-    category_id: 4,
+    categoryId: 4,
     location: "Zen Yoga Studio"
   },
   {
@@ -134,7 +134,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-01T10:30:00"),
     end: new Date("2025-02-01T11:30:00"),
     description: "Catch up over coffee",
-    category_id: 3,
+    categoryId: 3,
     location: "Starbucks Downtown"
   },
   {
@@ -143,7 +143,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-02T14:00:00"),
     end: new Date("2025-02-02T15:00:00"),
     description: "Review sprint PRs",
-    category_id: 1,
+    categoryId: 1,
     location: "Virtual - Zoom"
   },
   {
@@ -152,7 +152,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-02T18:00:00"),
     end: new Date("2025-02-02T20:00:00"),
     description: "Monthly family dinner",
-    category_id: 5,
+    categoryId: 5,
     location: "Mom's House"
   },
   {
@@ -161,7 +161,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-03T09:00:00"),
     end: new Date("2025-02-03T11:00:00"),
     description: "Plan next sprint tasks",
-    category_id: 1,
+    categoryId: 1,
     location: "Conference Room A"
   },
   {
@@ -170,7 +170,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-03T17:00:00"),
     end: new Date("2025-02-03T18:00:00"),
     description: "Weekly grocery run",
-    category_id: 2,
+    categoryId: 2,
     location: "Whole Foods Market"
   },
   {
@@ -179,7 +179,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-04T19:00:00"),
     end: new Date("2025-02-04T20:30:00"),
     description: "Discussion of 'Project Hail Mary'",
-    category_id: 3,
+    categoryId: 3,
     location: "City Library"
   },
   {
@@ -188,7 +188,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-05T11:00:00"),
     end: new Date("2025-02-05T12:00:00"),
     description: "Knee rehabilitation session",
-    category_id: 4,
+    categoryId: 4,
     location: "PhysioHealth Center"
   },
   {
@@ -197,7 +197,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-05T12:30:00"),
     end: new Date("2025-02-05T13:30:00"),
     description: "Monthly team bonding lunch",
-    category_id: 1,
+    categoryId: 1,
     location: "Italian Restaurant"
   },
   {
@@ -206,7 +206,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-06T09:00:00"),
     end: new Date("2025-02-06T11:00:00"),
     description: "Regular maintenance check",
-    category_id: 2,
+    categoryId: 2,
     location: "AutoCare Center"
   },
   {
@@ -215,7 +215,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-06T19:00:00"),
     end: new Date("2025-02-06T21:00:00"),
     description: "Piano performance",
-    category_id: 5,
+    categoryId: 5,
     location: "Community Music Hall"
   },
   {
@@ -224,7 +224,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-07T10:00:00"),
     end: new Date("2025-02-07T11:30:00"),
     description: "Review new UI designs",
-    category_id: 1,
+    categoryId: 1,
     location: "Design Lab"
   },
   {
@@ -233,7 +233,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-07T19:00:00"),
     end: new Date("2025-02-07T23:00:00"),
     description: "Board games with friends",
-    category_id: 3,
+    categoryId: 3,
     location: "Jake's Place"
   },
   {
@@ -242,7 +242,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-08T08:00:00"),
     end: new Date("2025-02-08T09:30:00"),
     description: "10k training run",
-    category_id: 4,
+    categoryId: 4,
     location: "Riverside Park"
   },
   {
@@ -251,7 +251,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-08T14:00:00"),
     end: new Date("2025-02-08T16:00:00"),
     description: "Deep clean apartment",
-    category_id: 2,
+    categoryId: 2,
     location: "Home"
   },
   {
@@ -260,7 +260,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-09T18:00:00"),
     end: new Date("2025-02-09T20:00:00"),
     description: "Local developer meetup",
-    category_id: 1,
+    categoryId: 1,
     location: "Tech Hub"
   },
   {
@@ -269,7 +269,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-10T18:00:00"),
     end: new Date("2025-02-10T20:00:00"),
     description: "Italian cooking basics",
-    category_id: 2,
+    categoryId: 2,
     location: "Culinary Institute"
   },
   {
@@ -278,7 +278,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-11T13:00:00"),
     end: new Date("2025-02-11T14:00:00"),
     description: "Demo new features to stakeholders",
-    category_id: 1,
+    categoryId: 1,
     location: "Main Conference Room"
   },
   {
@@ -287,7 +287,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-11T17:00:00"),
     end: new Date("2025-02-11T19:00:00"),
     description: "Buy Valentine's Day gifts",
-    category_id: 2,
+    categoryId: 2,
     location: "Shopping Mall"
   },
   {
@@ -296,7 +296,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-12T19:30:00"),
     end: new Date("2025-02-12T21:30:00"),
     description: "Local league game",
-    category_id: 4,
+    categoryId: 4,
     location: "Community Center"
   },
   {
@@ -305,7 +305,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-13T09:00:00"),
     end: new Date("2025-02-13T10:00:00"),
     description: "Regular dental check-up",
-    category_id: 4,
+    categoryId: 4,
     location: "Smile Dental Clinic"
   },
   {
@@ -314,7 +314,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-14T19:00:00"),
     end: new Date("2025-02-14T21:00:00"),
     description: "Romantic dinner date",
-    category_id: 3,
+    categoryId: 3,
     location: "Le Petit Bistro"
   },
   {
@@ -323,7 +323,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-15T11:00:00"),
     end: new Date("2025-02-15T12:30:00"),
     description: "Brunch with college friends",
-    category_id: 3,
+    categoryId: 3,
     location: "Cafe Sunrise"
   },
   {
@@ -332,7 +332,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-15T14:00:00"),
     end: new Date("2025-02-15T16:00:00"),
     description: "Fix kitchen sink",
-    category_id: 2,
+    categoryId: 2,
     location: "Home"
   },
   {
@@ -341,7 +341,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-16T15:00:00"),
     end: new Date("2025-02-16T17:30:00"),
     description: "Watch new animated film",
-    category_id: 5,
+    categoryId: 5,
     location: "Cinema City"
   },
   {
@@ -350,7 +350,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-17T13:00:00"),
     end: new Date("2025-02-17T17:00:00"),
     description: "Escape room challenge",
-    category_id: 1,
+    categoryId: 1,
     location: "Escape Room Downtown"
   },
   {
@@ -359,7 +359,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-18T16:00:00"),
     end: new Date("2025-02-18T17:00:00"),
     description: "Monthly relaxation massage",
-    category_id: 4,
+    categoryId: 4,
     location: "Wellness Spa"
   },
   {
@@ -368,7 +368,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-19T10:00:00"),
     end: new Date("2025-02-19T11:30:00"),
     description: "Quarterly review meeting",
-    category_id: 1,
+    categoryId: 1,
     location: "Client Office"
   },
   {
@@ -377,7 +377,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-19T18:00:00"),
     end: new Date("2025-02-19T20:00:00"),
     description: "Watercolor painting basics",
-    category_id: 2,
+    categoryId: 2,
     location: "Art Studio"
   },
   {
@@ -386,7 +386,7 @@ export const EVENTS: ChronosEvent[] = [
     start: new Date("2025-02-19T20:30:00"),
     end: new Date("2025-02-19T22:30:00"),
     description: "Monthly family game night",
-    category_id: 5,
+    categoryId: 5,
     location: "Dad's House"
   }
 ]

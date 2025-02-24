@@ -2,8 +2,12 @@
 
 import { ChevronLeftIcon, ChevronRightIcon, CalendarPlusIcon, CheckIcon } from "lucide-react"
 import { Select, SelectContent, SelectTrigger, SelectValue } from "./select"
+import { Popover, PopoverContent, PopoverTrigger } from "./popover"
+import { SegmentGroup, ButtonSegment } from "./segmented-button"
 import * as SelectPrimitive from "@radix-ui/react-select"
+import { TooltipProvider } from "./tooltip"
 import { ChronosView } from "./chronos-view"
+import { EventForm } from "./event-form"
 import { Button } from "./button"
 import * as React from "react"
 import { cn } from "@/lib/utils"
@@ -19,9 +23,10 @@ type ChronosEvent = {
   title: string
   start: Date
   end: Date
+  allDay?: boolean
   location?: string
   description?: string
-  category_id?: string | number
+  categoryId?: string | number
 }
 
 const VIEWS = ["day", "week", "month", "year", "list"] as const
@@ -40,11 +45,11 @@ type ChronosContextType = {
 
 const ChronosContext = React.createContext<ChronosContextType | undefined>(undefined)
 
-function ChronosProvider({ 
-  children, 
+function ChronosProvider({
+  children,
   events,
-  categories 
-}: { 
+  categories
+}: {
   children: React.ReactNode
   events: ChronosEvent[]
   categories: ChronosCategory[]
@@ -109,13 +114,28 @@ function ChronosProvider({
     [events, categories, viewType, selectedDate, offsetPeriod, goToToday]
   )
 
-  return <ChronosContext.Provider value={value}>{children}</ChronosContext.Provider>
+  return (
+    <TooltipProvider>
+      <ChronosContext.Provider value={value}>{children}</ChronosContext.Provider>
+    </TooltipProvider>
+  )
 }
 
 function useChronos() {
   const context = React.useContext(ChronosContext)
   if (context === undefined) throw new Error("useChronos must be used within a ChronosProvider")
   return context
+}
+
+export function useDayEvents(date: Date) {
+  const { events } = useChronos()
+
+  return React.useMemo(
+    () => events
+      .filter(event => event.start.toDateString() === date.toDateString())
+      .sort((a, b) => a.start.getTime() - b.start.getTime()),
+    [events, date]
+  )
 }
 
 function Chronos({ className }: { className?: string }) {
@@ -126,10 +146,7 @@ function Chronos({ className }: { className?: string }) {
         <DateNavigator />
         <div className="flex-1 hidden sm:inline-block" />
         <ViewSelect />
-        <Button className="gap-2">
-          <CalendarPlusIcon className="h-4 w-4" />
-          <span className="hidden sm:inline">New event</span>
-        </Button>
+        <NewEventButton /> 
       </div>
       <ChronosView />
     </div>
@@ -173,38 +190,21 @@ function TimePeriodText() {
 function DateNavigator() {
   const { offsetPeriod, goToToday } = useChronos()
 
-  function Segment({ onClick, className, children }: { onClick?: () => void, className?: string, children?: React.ReactNode }) {
-    return (
-      <button onClick={onClick} className={cn(
-        "cursor-pointer bg-background shadow-xs hover:bg-accent hover:text-accent-foreground px-3 py-2 transition-colors",
-        "outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:z-50",
-        className
-      )}>
-        {children}
-      </button>
-    )
-  }
-
   return (
-    <div className={cn(
-      "inline-flex items-stretch justify-center whitespace-nowrap text-sm font-medium min-h-9",
-      "border border-input shadow-xs isolate rounded-md [&>*]:first:rounded-l-md [&>*]:last:rounded-r-md",
-    )}>
-      <Segment onClick={() => offsetPeriod(-1)}>
+    <SegmentGroup>
+      <ButtonSegment onClick={() => offsetPeriod(-1)}>
         <ChevronLeftIcon className="size-4 pointer-events-none shrink-0" />
-      </Segment>
-      <Segment onClick={goToToday} className="hidden sm:inline-block">Today</Segment>
-      <Segment onClick={() => offsetPeriod(1)}>
+      </ButtonSegment>
+      <ButtonSegment onClick={goToToday} className="hidden sm:inline-block">Today</ButtonSegment>
+      <ButtonSegment onClick={() => offsetPeriod(1)}>
         <ChevronRightIcon className="size-4 pointer-events-none shrink-0" />
-      </Segment>
-    </div>
+      </ButtonSegment>
+    </SegmentGroup>
   )
 }
 
 function ViewSelect() {
   const { viewType, setViewType } = useChronos()
-
-  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
   function Item({ value }: { value: ViewType }) {
     return (
@@ -214,7 +214,6 @@ function ViewSelect() {
         className={cn(
           "focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center cursor-pointer",
           "gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-          // "*:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         )}
       >
         <span className="absolute right-2 flex size-3.5 items-center justify-center">
@@ -223,7 +222,7 @@ function ViewSelect() {
           </SelectPrimitive.ItemIndicator>
         </span>
         <SelectPrimitive.ItemText className="">
-          {capitalize(value)}
+          <span className="capitalize">{value}</span>
         </SelectPrimitive.ItemText>
         <span className="ml-auto text-muted-foreground/70 w-3 text-center">{value.charAt(0)}</span>
       </SelectPrimitive.Item>
@@ -241,6 +240,20 @@ function ViewSelect() {
         ))}
       </SelectContent>
     </Select>
+  )
+}
+
+function NewEventButton() {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button className="gap-2">
+          <CalendarPlusIcon />
+          <span className="hidden sm:inline">New event</span>
+        </Button>
+      </PopoverTrigger>
+      <EventForm onSubmit={console.log} align="end" alignOffset={-8} />
+    </Popover>
   )
 }
 
