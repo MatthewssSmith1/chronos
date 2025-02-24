@@ -1,17 +1,17 @@
 "use client"
 
-import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "./select"
+import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "../select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Popover, PopoverContent, PopoverTrigger } from "./popover"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import { ChronosEvent, useChronos } from "./chronos"
 import { useForm, useFormContext } from "react-hook-form"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Separator } from "./separator"
+import { Separator } from "@/components/ui/separator"
 import { Calendar } from "@/components/ui/calendar"
 import { Textarea } from "@/components/ui/textarea"
-import { Button } from "./button"
+import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { Input } from "@/components/ui/input"
 import { z } from "zod"
@@ -32,7 +32,7 @@ type FormProps = React.ComponentProps<typeof PopoverPrimitive.Content> & {
   onSubmit: (data: EventType) => void,
 }
 
-function EventForm({ event, onSubmit, className, ...props }: FormProps) {
+export function EventForm({ event, onSubmit, className, ...props }: FormProps) {
   const { categories } = useChronos()
   const form = useForm<EventType>({
     resolver: zodResolver(EventSchema),
@@ -240,5 +240,3 @@ function DateTimeField({ name }: { name: "start" | "end" }) {
     />
   );
 }
-
-export { EventForm }

@@ -1,24 +1,24 @@
 "use client"
 
+import { useState, useEffect, useMemo, useContext, useCallback, createContext, ReactNode } from "react"
 import { ChevronLeftIcon, ChevronRightIcon, CalendarPlusIcon, CheckIcon } from "lucide-react"
-import { Select, SelectContent, SelectTrigger, SelectValue } from "./select"
-import { Popover, PopoverContent, PopoverTrigger } from "./popover"
+import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SegmentGroup, ButtonSegment } from "./segmented-button"
+import { Popover, PopoverTrigger } from "@/components/ui/popover"
 import * as SelectPrimitive from "@radix-ui/react-select"
-import { TooltipProvider } from "./tooltip"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { ChronosView } from "./chronos-view"
 import { EventForm } from "./event-form"
-import { Button } from "./button"
-import * as React from "react"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-type ChronosCategory = {
+export type ChronosCategory = {
   id: string | number
   name: string
   color: string
 }
 
-type ChronosEvent = {
+export type ChronosEvent = {
   id: string | number
   title: string
   start: Date
@@ -43,21 +43,21 @@ type ChronosContextType = {
   goToToday: () => void
 }
 
-const ChronosContext = React.createContext<ChronosContextType | undefined>(undefined)
+const ChronosContext = createContext<ChronosContextType | undefined>(undefined)
 
-function ChronosProvider({
+export function ChronosProvider({
   children,
   events,
   categories
 }: {
-  children: React.ReactNode
+  children: ReactNode
   events: ChronosEvent[]
   categories: ChronosCategory[]
 }) {
-  const [selectedDate, setSelectedDate] = React.useState<Date>(new Date())
-  const [viewType, setViewType] = React.useState<ViewType>("week")
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [viewType, setViewType] = useState<ViewType>("week")
 
-  const offsetPeriod = React.useCallback((direction: number) => {
+  const offsetPeriod = useCallback((direction: number) => {
     setSelectedDate((currentDate) => {
       const newDate = new Date(currentDate)
 
@@ -80,9 +80,9 @@ function ChronosProvider({
     })
   }, [viewType, setSelectedDate])
 
-  const goToToday = React.useCallback(() => setSelectedDate(new Date()), [setSelectedDate])
+  const goToToday = useCallback(() => setSelectedDate(new Date()), [setSelectedDate])
 
-  React.useEffect(() => {
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key.length !== 1) return
 
@@ -100,7 +100,7 @@ function ChronosProvider({
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [setViewType, offsetPeriod, goToToday])
 
-  const value = React.useMemo(
+  const value = useMemo(
     () => ({
       events,
       categories,
@@ -121,8 +121,8 @@ function ChronosProvider({
   )
 }
 
-function useChronos() {
-  const context = React.useContext(ChronosContext)
+export function useChronos() {
+  const context = useContext(ChronosContext)
   if (context === undefined) throw new Error("useChronos must be used within a ChronosProvider")
   return context
 }
@@ -130,7 +130,7 @@ function useChronos() {
 export function useDayEvents(date: Date) {
   const { events } = useChronos()
 
-  return React.useMemo(
+  return useMemo(
     () => events
       .filter(event => event.start.toDateString() === date.toDateString())
       .sort((a, b) => a.start.getTime() - b.start.getTime()),
@@ -138,7 +138,7 @@ export function useDayEvents(date: Date) {
   )
 }
 
-function Chronos({ className }: { className?: string }) {
+export function Chronos({ className }: { className?: string }) {
   return (
     <div className={cn("w-full h-full flex flex-col gap-4 p-4", className)}>
       <div className="flex items-center justify-between px-2 gap-2 sm:gap-4">
@@ -256,5 +256,3 @@ function NewEventButton() {
     </Popover>
   )
 }
-
-export { ChronosProvider, Chronos, useChronos, ViewType, ChronosEvent, ChronosCategory }

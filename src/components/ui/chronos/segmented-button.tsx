@@ -1,9 +1,9 @@
 "use client"
 
-import * as React from "react"
+import { ReactNode } from "react"
 import { cn } from "@/lib/utils"
 
-function SegmentGroup({ children }: { children: React.ReactNode }) {
+export function SegmentGroup({ children }: { children: ReactNode | ReactNode[] }) {  
   return (
     <div className={cn(
       "inline-flex items-stretch justify-center whitespace-nowrap text-sm font-medium min-h-9",
@@ -14,7 +14,7 @@ function SegmentGroup({ children }: { children: React.ReactNode }) {
   )
 }
 
-function ButtonSegment({ onClick, className, children }: { onClick?: () => void, className?: string, children?: React.ReactNode }) {
+export function ButtonSegment({ onClick, className, children }: { onClick?: () => void, className?: string, children?: ReactNode | ReactNode[] }) {
   return (
     <button onClick={onClick} className={cn(
       "cursor-pointer bg-background shadow-xs hover:bg-accent hover:text-accent-foreground px-3 py-2 transition-colors",
@@ -25,5 +25,3 @@ function ButtonSegment({ onClick, className, children }: { onClick?: () => void,
     </button>
   )
 }
-
-export { SegmentGroup, ButtonSegment }

@@ -1,16 +1,17 @@
 "use client"
 
 import { useChronos, ChronosEvent, ChronosCategory, useDayEvents } from "./chronos"
-import { cn, formatTimeRange, formatTime } from "@/lib/utils"
-import { Popover, PopoverTrigger } from "./popover"
+import { Popover, PopoverTrigger } from "@/components/ui/popover"
+import { cn, formatTime } from "@/lib/utils"
+import { DayColumn } from "./day-column"
 import { EventForm } from "./event-form"
 import { PlusIcon } from "lucide-react"
-import { Calendar } from "./calendar"
-import { Button } from "./button"
-import * as React from "react"
-import { Card } from "./card"
+import { Calendar } from "@/components/ui/calendar"
+import { useMemo } from "react"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 
-function ChronosView() {
+export function ChronosView() {
   const { viewType } = useChronos()
 
   const View = {
@@ -33,7 +34,7 @@ function DayView() {
 function WeekView() {
   const { selectedDate } = useChronos()
 
-  const weekDates = React.useMemo(() => {
+  const weekDates = useMemo(() => {
     const dates = []
     const firstDayOfWeek = new Date(selectedDate)
     firstDayOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay())
@@ -67,22 +68,6 @@ function DaysView({ dates, className }: { dates: Date[], className?: string }) {
     )
   }
 
-  function DayColumn({ date, isLast }: { date: Date, isLast?: boolean }) {
-    const { categories } = useChronos()
-    
-    const dayEvents = useDayEvents(date)
-
-    return (
-      <div className={cn(
-        "flex-1 flex flex-col h-full relative",
-        !isLast && "border-r",
-        isLast && "rounded-br-md"
-      )}>
-        {dayEvents.map(event => <EventCard key={event.id} event={event} category={categories.find(cat => cat.id === event.categoryId)!} />)}
-      </div>
-    )
-  }
-
   return (
     <Card className={cn("flex-1 flex p-0 grid grid-rows-[auto_1fr] gap-0 isolate overflow-y-auto overflow-x-hidden", className)}>
       <div className="row-start-1 col-start-1" />
@@ -97,41 +82,10 @@ function DaysView({ dates, className }: { dates: Date[], className?: string }) {
   )
 }
 
-function EventCard({ event, category }: { event: ChronosEvent, category: ChronosCategory }) {
-  const startHours = event.start.getHours() + (event.start.getMinutes() / 60)
-  const endHours = event.end.getHours() + (event.end.getMinutes() / 60)
-  const duration = endHours - startHours
-  const PADDING = 3
-
-  function Subtitle() {
-    let text = formatTimeRange(event.start, event.end)
-    if (event.location) text += ` @ ${event.location}`
-    return (
-      <p className="text-xs text-white truncate pointer-events-none">{text}</p>
-    )
-  }
-  
-  return (
-    <div
-      className="absolute z-40 rounded-md px-1.5 py-1 overflow-hidden cursor-pointer transition-all hover:brightness-110 hover:shadow-sm"
-      style={{
-        backgroundColor: category.color,
-        top: `${startHours * 75 + PADDING}px`,
-        height: `${duration * 75 - PADDING * 2}px`,
-        left: `${PADDING}px`,
-        right: `${PADDING}px`,
-      }}
-    >
-      <p className="text-sm text-white truncate pointer-events-none font-medium">{event.title}</p>
-      {duration > 0.5 && <Subtitle /> }
-    </div>
-  )
-}
-
 function useMonthDates() {
   const { selectedDate } = useChronos()
   
-  return React.useMemo(() => {
+  return useMemo(() => {
     const firstOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
     const lastOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0)
     
@@ -281,5 +235,3 @@ function DateHeader({ date, hideWeekday = false, className }: { date: Date, hide
     </div>
   )
 }
-
-export { ChronosView }

@@ -1,4 +1,4 @@
-import { ChronosEvent, ChronosCategory } from '@/components/ui/chronos'
+import { ChronosEvent, ChronosCategory } from '@/components/ui/chronos/chronos'
 
 export const CATEGORIES: ChronosCategory[] = [
   {
