@@ -53,7 +53,7 @@ export function EventForm({ event, onSubmit, className, ...props }: FormProps) {
   return (
     <PopoverContent className="w-min min-w-[400px]" {...props}>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} onMouseDown={(e) => e.stopPropagation()} className="space-y-4">
           <h2 className="text-xl font-bold mb-4">{event ? "Edit event" : "Create event"}</h2>
 
           <FormField

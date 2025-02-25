@@ -3,10 +3,10 @@
 import { useChronos, ChronosEvent, ChronosCategory, useDayEvents } from "./chronos"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
 import { cn, formatTime } from "@/lib/utils"
-import { DayColumn } from "./day-column"
 import { EventForm } from "./event-form"
 import { PlusIcon } from "lucide-react"
 import { Calendar } from "@/components/ui/calendar"
+import { DaysView } from "./days-view"
 import { useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -50,37 +50,6 @@ function WeekView() {
   return <DaysView dates={weekDates} className="grid-cols-[auto_repeat(7,_1fr)]" />
 }
 
-function DaysView({ dates, className }: { dates: Date[], className?: string }) {
-  function TimeColumn() {
-    const times = Array.from({ length: 24 }, (_, i) => `${(i % 12) + 1} ${i < 11 ? "AM" : "PM"}`)
-    
-    return (
-      <div className="w-18 relative [&>*]:h-[75px] [&>*]:relative [&>*:last-child>*]:hidden">
-        {times.map((time, i) => (
-          <div key={i}>
-            <div className="absolute right-1/2 bottom-0 translate-x-1/2 translate-y-[9px]">
-              <p className="text-sm text-muted-foreground whitespace-nowrap">{time}</p>
-            </div>
-            <div className="absolute bottom-0 left-full w-screen h-[1px] bg-border z-10" />
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  return (
-    <Card className={cn("flex-1 flex p-0 grid grid-rows-[auto_1fr] gap-0 isolate overflow-y-auto overflow-x-hidden", className)}>
-      <div className="row-start-1 col-start-1" />
-      {dates.map((date, idx) => (
-        <DateHeader key={idx} date={date} className="sticky top-0 z-50 py-2 bg-background/80 border-b" />
-      ))}
-      <TimeColumn />
-      {dates.map((date, idx) => (
-        <DayColumn date={date} key={idx} isLast={idx === dates.length - 1} />
-      ))}
-    </Card>
-  )
-}
 
 function useMonthDates() {
   const { selectedDate } = useChronos()
@@ -207,7 +176,7 @@ function ScheduleView() {
   return <div>TODO: List View</div>
 }
 
-function DateHeader({ date, hideWeekday = false, className }: { date: Date, hideWeekday?: boolean, className?: string }) {
+export function DateHeader({ date, hideWeekday = false, className }: { date: Date, hideWeekday?: boolean, className?: string }) {
   const textStyle = "mx-auto text-xs sm:text-sm font-medium text-muted-foreground"
 
   function WeekdayText() {
