@@ -28,7 +28,7 @@ export function DaysView({ dates, className }: { dates: Date[], className?: stri
 
 function TimeColumn() {
   const times = Array.from({ length: 24 }, (_, i) => `${(i % 12) + 1} ${i < 11 ? "AM" : "PM"}`)
-  
+
   return (
     <div className="w-18 relative [&>*]:h-[75px] [&>*]:relative [&>*:last-child>*]:hidden">
       {times.map((time, i) => (
@@ -58,11 +58,13 @@ function useCreateEventDrag(columnRef: RefObject<HTMLDivElement | null>, date: D
     previewEvent: null
   });
 
+  const hasDragged = useRef(false);
+
   const getTimeFromY = useCallback((y: number) => {
     if (!columnRef.current) return new Date(date)
     const { top, height } = columnRef.current.getBoundingClientRect()
     const hoursFromMidnight = 24 * Math.max(0, Math.min(1, (y - top) / height))
-    
+
     const newTime = new Date(date)
     newTime.setHours(Math.floor(hoursFromMidnight))
     newTime.setMinutes(Math.round((hoursFromMidnight % 1) * 60 / 15) * 15)
@@ -70,8 +72,12 @@ function useCreateEventDrag(columnRef: RefObject<HTMLDivElement | null>, date: D
   }, [date])
 
   const onMouseDown = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
+    // Ignore if we clicked on an event card
+    if ((e.target as HTMLElement).closest('.event-card')) return;
+
     e.preventDefault()
     const time = getTimeFromY(e.clientY)
+    hasDragged.current = false;
     setDragState({
       isDragging: true,
       dragStart: time,
@@ -80,13 +86,32 @@ function useCreateEventDrag(columnRef: RefObject<HTMLDivElement | null>, date: D
     });
   }, [getTimeFromY])
 
+  const onMouseUp = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
+    if (hasDragged.current) return
+
+    const clickTime = getTimeFromY(e.clientY)
+    const endTime = new Date(clickTime)
+    endTime.setHours(clickTime.getHours() + 1)
+
+    setDragState(prev => ({
+      ...prev,
+      previewEvent: {
+        id: 'preview',
+        title: 'New event',
+        start: clickTime,
+        end: endTime
+      }
+    }));
+  }, [getTimeFromY, hasDragged]);
+
   useEffect(() => {
     if (!dragState.isDragging) return
 
     const onMouseMove = (e: MouseEvent) => {
       e.preventDefault()
+      hasDragged.current = true;
       const dragEnd = getTimeFromY(e.clientY)
-      
+
       setDragState(prev => {
         if (!prev.dragStart) return prev;
 
@@ -115,10 +140,11 @@ function useCreateEventDrag(columnRef: RefObject<HTMLDivElement | null>, date: D
     }
   }, [dragState.isDragging, getTimeFromY])
 
-  return { 
-    onMouseDown, 
-    previewEvent: dragState.previewEvent, 
-    hidePreview: () => setDragState(prev => ({ ...prev, previewEvent: null })) 
+  return {
+    onMouseDown,
+    onMouseUp,
+    previewEvent: dragState.previewEvent,
+    hidePreview: () => setDragState(prev => ({ ...prev, previewEvent: null }))
   }
 }
 
@@ -126,13 +152,14 @@ function DayColumn({ date, isLast }: { date: Date, isLast?: boolean }) {
   const columnRef = useRef<HTMLDivElement>(null)
   const { categories } = useChronos()
   const dayEvents = useDayEvents(date)
-  
-  const { onMouseDown, previewEvent, hidePreview } = useCreateEventDrag(columnRef, date)
+
+  const { onMouseDown, onMouseUp, previewEvent, hidePreview } = useCreateEventDrag(columnRef, date)
 
   return (
-    <div 
+    <div
       ref={columnRef}
       onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
       className={cn(
         "flex-1 flex flex-col h-full relative",
         !isLast && "border-r",
@@ -140,18 +167,18 @@ function DayColumn({ date, isLast }: { date: Date, isLast?: boolean }) {
       )}
     >
       {dayEvents.map(event => (
-        <EventCard 
-          key={event.id} 
-          event={event} 
-          className={cn(previewEvent && "hover:brightness-100 hover:shadow-none")}
-          category={categories.find(cat => cat.id === event.categoryId)!} 
+        <EventCard
+          key={event.id}
+          event={event}
+          className={cn("event-card", previewEvent && "hover:brightness-100 hover:shadow-none")}
+          category={categories.find(cat => cat.id === event.categoryId)!}
         />
       ))}
-      
+
       {previewEvent && (
         <Popover defaultOpen onOpenChange={(open) => !open && hidePreview()}>
           <PopoverTrigger asChild>
-              <EventCard event={previewEvent} className="bg-neutral-400 hover:brightness-100 shadow-sm" />
+            <EventCard event={previewEvent} className="event-card bg-neutral-400 hover:brightness-100 shadow-sm" />
           </PopoverTrigger>
           <PopoverPrimitive.Anchor className="absolute" style={{ top: `${PX_PER_HOUR * (previewEvent.start.getHours() + (previewEvent.start.getMinutes() / 60)) + 3}px` }} />
           <EventForm onSubmit={console.log} side="left" align="start" />
@@ -174,9 +201,10 @@ function EventCard({ event, category, className }: { event: ChronosEvent, catego
       <p className="text-left text-xs text-white truncate pointer-events-none">{text}</p>
     )
   }
-  
+
   return (
     <div
+      onClick={(e) => e.stopPropagation()}
       className={cn("absolute z-40 rounded-md px-1.5 py-1 overflow-hidden cursor-pointer transition-[filter,box-shadow] hover:brightness-110 hover:shadow-sm", className)}
       style={{
         backgroundColor: category?.color,
@@ -187,7 +215,7 @@ function EventCard({ event, category, className }: { event: ChronosEvent, catego
       }}
     >
       <p className="text-left text-sm text-white truncate pointer-events-none font-medium">{event.title}</p>
-      {duration > 0.5 && <Subtitle /> }
+      {duration > 0.5 && <Subtitle />}
     </div>
   )
 }
