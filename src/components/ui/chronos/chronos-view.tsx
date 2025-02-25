@@ -130,7 +130,6 @@ function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCoun
             <Button
               variant="ghost"
               className="h-6 w-full flex items-center justify-center rounded-sm bg-primary/5 hover:bg-primary/10 hover:shadow-sm opacity-0 group-hover:opacity-100 aria-expanded:opacity-100 transition-all"
-              onClick={() => console.log("Add event clicked")}
             >
               <PlusIcon />
             </Button>

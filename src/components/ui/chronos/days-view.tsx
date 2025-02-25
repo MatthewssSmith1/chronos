@@ -1,16 +1,17 @@
 "use client"
 
-import { useState, useCallback, useRef, useEffect, RefObject, MouseEvent as ReactMouseEvent, useMemo } from "react"
+import { useState, useCallback, useRef, RefObject, MouseEvent as ReactMouseEvent, useMemo } from "react"
 import { useChronos, ChronosEvent, ChronosCategory, useDayEvents } from "./chronos"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
 import { cn, formatTimeRange } from "@/lib/utils"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
+import { useDayDrag } from "@/hooks/use-day-drag"
 import { DateHeader } from "./chronos-view"
 import { EventForm } from "./event-form"
 import { Card } from "@/components/ui/card"
 
 export const PX_PER_HOUR = 75
-export const TIME_SNAP_MINUTES = 15 
+const EVENT_PADDING = 3
 
 export function DaysView({ dates, className }: { dates: Date[], className?: string }) {
   return (
@@ -44,123 +45,47 @@ function TimeColumn() {
   )
 }
 
-interface DragState {
-  isDragging: boolean
-  dragStart: Date | null
-  dragEnd: Date | null
-  previewEvent: ChronosEvent | null
-}
-
 function useCreateEventGestures(columnRef: RefObject<HTMLDivElement | null>, date: Date) {
-  const [dragState, setDragState] = useState<DragState>({
-    isDragging: false,
-    dragStart: null,
-    dragEnd: null,
-    previewEvent: null
-  })
-
-  // const hasDragged = useRef(false);
-
-  const getTimeFromY = useCallback((y: number) => {
-    if (!columnRef.current) return new Date(date)
-    const { top, height } = columnRef.current.getBoundingClientRect()
-    const hoursFromMidnight = 24 * Math.max(0, Math.min(1, (y - top) / height))
-
-    const newTime = new Date(date)
-    newTime.setHours(Math.floor(hoursFromMidnight))
-    newTime.setMinutes(Math.round((hoursFromMidnight % 1) * 60 / TIME_SNAP_MINUTES) * TIME_SNAP_MINUTES)
-    return newTime
-  }, [date])
-
+  const [previewEvent, setPreviewEvent] = useState<ChronosEvent | null>(null)
+  
+  const { isDragging, startDrag } = useDayDrag(columnRef, date)
+  
   const onMouseDown = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return
-    // Ignore if we clicked on an event card
-    console.log((e.target as HTMLElement).closest('.event-card'))
-    if ((e.target as HTMLElement).closest('.event-card')) return;
-
-    e.preventDefault()
-    const time = getTimeFromY(e.clientY)
-    // hasDragged.current = false;
-    setDragState({
-      isDragging: true,
-      dragStart: time,
-      dragEnd: time,
-      previewEvent: null
-    })
-  }, [getTimeFromY])
-
-  // const onMouseUp = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
-  //   if (hasDragged.current || e.button !== 0) return
-
-  //   const clickTime = getTimeFromY(e.clientY)
-  //   const endTime = new Date(clickTime)
-  //   endTime.setHours(clickTime.getHours() + 1)
-
-  //   setDragState(prev => ({
-  //     ...prev,
-  //     previewEvent: {
-  //       id: 'preview',
-  //       title: 'New event',
-  //       start: clickTime,
-  //       end: endTime
-  //     }
-  //   }));
-  // }, [getTimeFromY, hasDragged]);
-
-  useEffect(() => {
-    if (!dragState.isDragging) return
-
-    const onMouseMove = (e: MouseEvent) => {
-      e.preventDefault()
-      // hasDragged.current = true;
-      const dragEnd = getTimeFromY(e.clientY)
-
-      setDragState(prev => {
-        if (!prev.dragStart) return prev
-
-        const [start, end] = [prev.dragStart, dragEnd].sort((a, b) => a.getTime() - b.getTime())
-        return {
-          ...prev,
-          dragEnd,
-          previewEvent: { id: 'preview', title: 'New event', start, end }
-        }
-      })
-    }
-
-    const onMouseUp = (e: MouseEvent) => {
-      e.preventDefault()
-      window.removeEventListener('mousemove', onMouseMove)
-      setDragState(prev => ({ ...prev, isDragging: false }))
-    }
-
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
-    document.body.style.userSelect = 'none'
-
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-      document.body.style.userSelect = ''
-    }
-  }, [dragState.isDragging, getTimeFromY])
-
-  const anchorStyle = useMemo(() => {
-    if (!dragState.previewEvent) return {}
+    const clickedCard = (e.target as HTMLElement).closest('.event-card')
+    if (clickedCard || e.button !== 0) return
     
-    const startHours = dragState.previewEvent.start.getHours() + (dragState.previewEvent.start.getMinutes() / 60)
-    const endHours = dragState.previewEvent.end.getHours() + (dragState.previewEvent.end.getMinutes() / 60)
+    startDrag(e, {
+      onDragMove: ({ startTime, currentTime }) => {
+        const [start, end] = [startTime, currentTime].sort((a, b) => a.getTime() - b.getTime())
+        
+        setPreviewEvent({ 
+          id: 'preview', 
+          title: '', 
+          start, 
+          end 
+        })
+      },
+      // onDragEnd: () => {}
+    })
+  }, [startDrag])
+  
+  const anchorStyle = useMemo(() => {
+    if (!previewEvent) return {}
+    
+    const startHours = previewEvent.start.getHours() + (previewEvent.start.getMinutes() / 60)
+    const endHours = previewEvent.end.getHours() + (previewEvent.end.getMinutes() / 60)
     const eventCenter = startHours + ((endHours - startHours) / 2)
     
     return {
       top: `${PX_PER_HOUR * eventCenter}px`
     }
-  }, [dragState.previewEvent])
-
+  }, [previewEvent])
+  
   return {
     onMouseDown,
-    previewEvent: dragState.previewEvent,
-    isDragging: dragState.isDragging,
-    hidePreview: () => setDragState(prev => ({ ...prev, previewEvent: null })),
+    isDragging,
+    previewEvent,
+    setPreviewEvent,
     anchorStyle
   }
 }
@@ -170,7 +95,7 @@ function DayColumn({ date, numDays }: { date: Date, numDays: number }) {
   const { categories } = useChronos()
   const dayEvents = useDayEvents(date)
 
-  const { onMouseDown, previewEvent, isDragging, hidePreview, anchorStyle } = useCreateEventGestures(columnRef, date)
+  const { onMouseDown, isDragging, previewEvent, setPreviewEvent, anchorStyle } = useCreateEventGestures(columnRef, date)
 
   const index = date.getDay()
   const isLast = index === 6
@@ -180,36 +105,80 @@ function DayColumn({ date, numDays }: { date: Date, numDays: number }) {
     <div
       ref={columnRef}
       onMouseDown={onMouseDown}
-      className={cn("flex-1 flex flex-col h-full relative", isLast ? "rounded-br-md" : "border-r")}
+      className={cn("flex-1 flex flex-col h-full relative select-none", isLast ? "rounded-br-md" : "border-r")}
     >
       {dayEvents.map(event => (
-        <EventCard
-          key={event.id}
-          event={event}
-          className={cn("event-card", previewEvent && "hover:brightness-100 hover:shadow-none")}
-          category={categories.find(cat => cat.id === event.categoryId)!}
-        />
+        <EventCard key={event.id} event={event} category={categories.find(cat => cat.id === event.categoryId)!} onEventChanged={console.log} />
       ))}
 
       {previewEvent && (
-        <Popover open={!isDragging} onOpenChange={(open) => !open && hidePreview()}>
+        <Popover open={!isDragging} onOpenChange={(open) => !open && setPreviewEvent(null)}>
           <PopoverTrigger asChild>
-            <EventCard event={previewEvent} className="event-card bg-neutral-400 hover:brightness-100 shadow-sm" />
+            <EventCard event={previewEvent} className="preview-event bg-neutral-400 hover:brightness-100 shadow-sm [.event-crd:has(~&)]:pointer-events-none" onEventChanged={setPreviewEvent} />
           </PopoverTrigger>
           <PopoverPrimitive.Anchor className="absolute left-0 right-0" style={anchorStyle} />
-          <EventForm onSubmit={console.log} side={firstHalf ? "right" : "left"} align="center" />
+          <EventForm 
+            event={previewEvent} 
+            onEventChanged={setPreviewEvent}
+            // onEventChanged={console.log}
+            onSubmit={console.log} 
+            side={firstHalf ? "right" : "left"} 
+            align="center" 
+          />
         </Popover>
       )}
     </div>
   )
 }
 
-function EventCard({ event, category, className }: { event: ChronosEvent, category?: ChronosCategory, className?: string }) {
+function EventCard({ 
+  event, 
+  category, 
+  className, 
+  onEventChanged 
+}: { 
+  event: ChronosEvent, 
+  category?: ChronosCategory, 
+  className?: string,
+  onEventChanged?: (updatedEvent: ChronosEvent) => void 
+}) {
+  // const [event, setEvent] = useState(initialEvent)
   const startHours = event.start.getHours() + (event.start.getMinutes() / 60)
   const endHours = event.end.getHours() + (event.end.getMinutes() / 60)
   const duration = endHours - startHours
-  const PADDING = 3
-
+  
+  const columnRef = useRef<HTMLDivElement>(null)
+  const { startDrag } = useDayDrag(columnRef, new Date(event.start))
+  
+  // const handleResize = useCallback((e: ReactMouseEvent, isTopEdge: boolean) => {
+  //   if (!onEventChanged) return
+    
+  //   startDrag(e, {
+  //     onDragMove: ({ currentTime }) => {
+  //       if (isTopEdge) {
+  //         // Don't allow start time to be after end time
+  //         if (currentTime >= event.end) return
+          
+  //         onEventChanged({
+  //           ...event,
+  //           start: currentTime
+  //         })
+  //       } else {
+  //         // Don't allow end time to be before start time
+  //         if (currentTime <= event.start) return
+          
+  //         onEventChanged({
+  //           ...event,
+  //           end: currentTime
+  //         })
+  //       }
+  //     },
+  //     onDragEnd: ({ endTime }) => {
+  //       console.log(`Resize from ${isTopEdge ? 'top' : 'bottom'} completed`, endTime)
+  //     }
+  //   })
+  // }, [event, onEventChanged, startDrag])
+  
   function Subtitle() {
     let text = formatTimeRange(event.start, event.end)
     if (event.location) text += ` @ ${event.location}`
@@ -220,16 +189,29 @@ function EventCard({ event, category, className }: { event: ChronosEvent, catego
 
   return (
     <div
+      ref={columnRef}
       className={cn("event-card absolute z-40 rounded-md px-1.5 py-1 overflow-hidden cursor-pointer select-none transition-[filter,box-shadow] hover:brightness-110 hover:shadow-sm", className)}
       style={{
         backgroundColor: category?.color,
-        top: `${startHours * PX_PER_HOUR + PADDING}px`,
-        height: `${duration * PX_PER_HOUR - PADDING * 2}px`,
-        left: `${PADDING}px`,
-        right: `${PADDING}px`,
+        top: `${startHours * PX_PER_HOUR + EVENT_PADDING}px`,
+        height: `${duration * PX_PER_HOUR - EVENT_PADDING * 2}px`,
+        left: `${EVENT_PADDING}px`,
+        right: `${EVENT_PADDING}px`,
       }}
     >
-      <p className="text-left text-sm text-white truncate pointer-events-none font-medium">{event.title}</p>
+      {onEventChanged && (
+        <>
+          <div 
+            className="absolute top-0 left-0 right-0 h-1 cursor-n-resize z-10 hover:bg-white/20" 
+            // onMouseDown={(e) => handleResize(e, true)}
+          />
+          <div 
+            className="absolute bottom-0 left-0 right-0 h-1 cursor-s-resize z-10 hover:bg-white/20" 
+            // onMouseDown={(e) => handleResize(e, false)}
+          />
+        </>
+      )}
+      <p className="text-left text-sm text-white truncate pointer-events-none font-medium">{event.title.length === 0 ? "(No title)" : event.title}</p>
       {duration > 0.5 && <Subtitle />}
     </div>
   )

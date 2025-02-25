@@ -16,6 +16,7 @@ import { format } from "date-fns"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { z } from "zod"
+import { useEffect } from "react"
 
 const EventSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
@@ -30,19 +31,20 @@ type EventType = z.infer<typeof EventSchema>
 
 type FormProps = React.ComponentProps<typeof PopoverPrimitive.Content> & {
   onSubmit: (data: EventType) => void,
+  onEventChanged?: (event: ChronosEvent) => void,
   event?: ChronosEvent,
   editMode?: boolean
 }
 
-export function EventForm({ onSubmit, event, className, editMode = false, ...props }: FormProps) {
+export function EventForm({ onSubmit, onEventChanged, event, className, editMode = false, ...props }: FormProps) {
   const { categories } = useChronos()
-  const defaultCategoryId = categories.length > 0 ? categories[0].id : ""
+  const defaultCategoryId = categories.length > 0 ? categories[0].id : undefined
 
   const form = useForm<EventType>({
     resolver: zodResolver(EventSchema),
     defaultValues: event ? {
       ...event,
-      categoryId: event.categoryId ?? defaultCategoryId
+      categoryId: defaultCategoryId
     } : {
       title: "",
       categoryId: defaultCategoryId,
@@ -53,6 +55,33 @@ export function EventForm({ onSubmit, event, className, editMode = false, ...pro
       description: ""
     }
   })
+
+  // Update form values when the event prop changes
+  useEffect(() => {
+    if (!event) return
+    
+    form.reset({
+      ...event,
+      categoryId: event.categoryId || defaultCategoryId
+    })
+  }, [event, form, defaultCategoryId])
+
+  // Watch for form changes and update preview
+  useEffect(() => {
+    if (!onEventChanged || !event) return
+    
+    const subscription = form.watch((formValues) => {
+      // Skip incomplete form updates
+      if (!formValues.start || !formValues.end) return
+      
+      onEventChanged({
+        ...event,
+        ...formValues
+      })
+    })
+    
+    return () => subscription.unsubscribe()
+  }, [form, onEventChanged, event])
 
   return (
     <PopoverContent className="w-min min-w-[400px]" {...props}>
