@@ -13,20 +13,20 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 export type ChronosCategory = {
-  id: string | number
+  id: string
   name: string
   color: string
 }
 
 export type ChronosEvent = {
-  id: string | number
+  id: string
   title: string
   start: Date
   end: Date
   allDay?: boolean
   location?: string
   description?: string
-  categoryId?: string | number
+  categoryId?: string
 }
 
 const VIEWS = ["day", "week", "month", "year", "list"] as const

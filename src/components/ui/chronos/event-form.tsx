@@ -29,20 +29,23 @@ const EventSchema = z.object({
 type EventType = z.infer<typeof EventSchema>
 
 type FormProps = React.ComponentProps<typeof PopoverPrimitive.Content> & {
-  event?: ChronosEvent,
   onSubmit: (data: EventType) => void,
+  event?: ChronosEvent,
+  editMode?: boolean
 }
 
-export function EventForm({ event, onSubmit, className, ...props }: FormProps) {
+export function EventForm({ onSubmit, event, className, editMode = false, ...props }: FormProps) {
   const { categories } = useChronos()
+  const defaultCategoryId = categories.length > 0 ? categories[0].id : ""
+
   const form = useForm<EventType>({
     resolver: zodResolver(EventSchema),
     defaultValues: event ? {
       ...event,
-      categoryId: event.categoryId?.toString() || ""
+      categoryId: event.categoryId ?? defaultCategoryId
     } : {
       title: "",
-      categoryId: categories.length > 0 ? categories[0].id.toString() : "",
+      categoryId: defaultCategoryId,
       start: new Date(),
       end: new Date(),
       allDay: false,
@@ -60,7 +63,7 @@ export function EventForm({ event, onSubmit, className, ...props }: FormProps) {
           onMouseDown={(e) => e.stopPropagation()} 
           className="space-y-4"
         >
-          <h2 className="text-xl font-bold mb-4">{event ? "Edit event" : "Create event"}</h2>
+          <h2 className="text-xl font-bold mb-4">{editMode ? "Edit event" : "Create event"}</h2>
 
           <FormField
             control={form.control}
@@ -118,7 +121,7 @@ export function EventForm({ event, onSubmit, className, ...props }: FormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Textarea placeholder="Description" className="max-h-36" {...field} />
+                  <Textarea placeholder="Description" className="max-h-40" {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -135,7 +138,7 @@ export function EventForm({ event, onSubmit, className, ...props }: FormProps) {
               </Button>
             </PopoverPrimitive.Close>
             <Button type="submit">
-              {event ? "Update" : "Create"}
+              {editMode ? "Update" : "Create"}
             </Button>
           </div>
         </form>
@@ -154,13 +157,13 @@ function TimeRangeSection() {
       render={({ field }) => {
         const showTimes = !field.value;
         return (
-          <FormItem>
+          <FormItem className="gap-4">
             <Tabs 
               value={showTimes ? "datetime" : "date"} 
               onValueChange={(value: string) => field.onChange(value === "date")} 
               className="w-full gap-4"
             >
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-2 [&>*]:transition-all">
                 <TabsTrigger value="datetime">Times</TabsTrigger>
                 <TabsTrigger value="date">Full Days</TabsTrigger>
               </TabsList>
