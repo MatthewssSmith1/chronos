@@ -51,7 +51,7 @@ interface DragState {
   previewEvent: ChronosEvent | null;
 }
 
-function useCreateEventDrag(columnRef: RefObject<HTMLDivElement | null>, date: Date) {
+function useCreateEventGestures(columnRef: RefObject<HTMLDivElement | null>, date: Date) {
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
     dragStart: null,
@@ -154,7 +154,7 @@ function DayColumn({ date, isLast }: { date: Date, isLast?: boolean }) {
   const { categories } = useChronos()
   const dayEvents = useDayEvents(date)
 
-  const { onMouseDown, previewEvent, hidePreview } = useCreateEventDrag(columnRef, date)
+  const { onMouseDown, previewEvent, hidePreview } = useCreateEventGestures(columnRef, date)
 
   return (
     <div
