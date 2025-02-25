@@ -10,6 +10,7 @@ import { EventForm } from "./event-form"
 import { Card } from "@/components/ui/card"
 
 export const PX_PER_HOUR = 75
+export const TIME_SNAP_MINUTES = 15 
 
 export function DaysView({ dates, className }: { dates: Date[], className?: string }) {
   return (
@@ -30,7 +31,7 @@ function TimeColumn() {
   const times = Array.from({ length: 24 }, (_, i) => `${(i % 12) + 1} ${i < 11 ? "AM" : "PM"}`)
 
   return (
-    <div className="w-18 relative [&>*]:h-[75px] [&>*]:relative [&>*:last-child>*]:hidden">
+    <div className="w-18 relative [&>*]:relative [&>*:last-child>*]:hidden">
       {times.map((time, i) => (
         <div key={i} style={{ height: `${PX_PER_HOUR}px` }}>
           <div className="absolute right-1/2 bottom-0 translate-x-1/2 translate-y-[9px]">
@@ -58,7 +59,7 @@ function useCreateEventDrag(columnRef: RefObject<HTMLDivElement | null>, date: D
     previewEvent: null
   });
 
-  const hasDragged = useRef(false);
+  // const hasDragged = useRef(false);
 
   const getTimeFromY = useCallback((y: number) => {
     if (!columnRef.current) return new Date(date)
@@ -67,17 +68,18 @@ function useCreateEventDrag(columnRef: RefObject<HTMLDivElement | null>, date: D
 
     const newTime = new Date(date)
     newTime.setHours(Math.floor(hoursFromMidnight))
-    newTime.setMinutes(Math.round((hoursFromMidnight % 1) * 60 / 15) * 15)
+    newTime.setMinutes(Math.round((hoursFromMidnight % 1) * 60 / TIME_SNAP_MINUTES) * TIME_SNAP_MINUTES)
     return newTime
   }, [date])
 
   const onMouseDown = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return
     // Ignore if we clicked on an event card
-    if ((e.target as HTMLElement).closest('.event-card')) return;
+    // if ((e.target as HTMLElement).closest('.event-card')) return;
 
     e.preventDefault()
     const time = getTimeFromY(e.clientY)
-    hasDragged.current = false;
+    // hasDragged.current = false;
     setDragState({
       isDragging: true,
       dragStart: time,
@@ -86,30 +88,30 @@ function useCreateEventDrag(columnRef: RefObject<HTMLDivElement | null>, date: D
     });
   }, [getTimeFromY])
 
-  const onMouseUp = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
-    if (hasDragged.current) return
+  // const onMouseUp = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
+  //   if (hasDragged.current || e.button !== 0) return
 
-    const clickTime = getTimeFromY(e.clientY)
-    const endTime = new Date(clickTime)
-    endTime.setHours(clickTime.getHours() + 1)
+  //   const clickTime = getTimeFromY(e.clientY)
+  //   const endTime = new Date(clickTime)
+  //   endTime.setHours(clickTime.getHours() + 1)
 
-    setDragState(prev => ({
-      ...prev,
-      previewEvent: {
-        id: 'preview',
-        title: 'New event',
-        start: clickTime,
-        end: endTime
-      }
-    }));
-  }, [getTimeFromY, hasDragged]);
+  //   setDragState(prev => ({
+  //     ...prev,
+  //     previewEvent: {
+  //       id: 'preview',
+  //       title: 'New event',
+  //       start: clickTime,
+  //       end: endTime
+  //     }
+  //   }));
+  // }, [getTimeFromY, hasDragged]);
 
   useEffect(() => {
     if (!dragState.isDragging) return
 
     const onMouseMove = (e: MouseEvent) => {
       e.preventDefault()
-      hasDragged.current = true;
+      // hasDragged.current = true;
       const dragEnd = getTimeFromY(e.clientY)
 
       setDragState(prev => {
@@ -142,7 +144,6 @@ function useCreateEventDrag(columnRef: RefObject<HTMLDivElement | null>, date: D
 
   return {
     onMouseDown,
-    onMouseUp,
     previewEvent: dragState.previewEvent,
     hidePreview: () => setDragState(prev => ({ ...prev, previewEvent: null }))
   }
@@ -153,13 +154,12 @@ function DayColumn({ date, isLast }: { date: Date, isLast?: boolean }) {
   const { categories } = useChronos()
   const dayEvents = useDayEvents(date)
 
-  const { onMouseDown, onMouseUp, previewEvent, hidePreview } = useCreateEventDrag(columnRef, date)
+  const { onMouseDown, previewEvent, hidePreview } = useCreateEventDrag(columnRef, date)
 
   return (
     <div
       ref={columnRef}
       onMouseDown={onMouseDown}
-      onMouseUp={onMouseUp}
       className={cn(
         "flex-1 flex flex-col h-full relative",
         !isLast && "border-r",
@@ -181,7 +181,7 @@ function DayColumn({ date, isLast }: { date: Date, isLast?: boolean }) {
             <EventCard event={previewEvent} className="event-card bg-neutral-400 hover:brightness-100 shadow-sm" />
           </PopoverTrigger>
           <PopoverPrimitive.Anchor className="absolute" style={{ top: `${PX_PER_HOUR * (previewEvent.start.getHours() + (previewEvent.start.getMinutes() / 60)) + 3}px` }} />
-          <EventForm onSubmit={console.log} side="left" align="start" />
+          <EventForm onSubmit={console.log} side="left" align="center" />
         </Popover>
       )}
     </div>
@@ -204,7 +204,7 @@ function EventCard({ event, category, className }: { event: ChronosEvent, catego
 
   return (
     <div
-      onClick={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
       className={cn("absolute z-40 rounded-md px-1.5 py-1 overflow-hidden cursor-pointer transition-[filter,box-shadow] hover:brightness-110 hover:shadow-sm", className)}
       style={{
         backgroundColor: category?.color,

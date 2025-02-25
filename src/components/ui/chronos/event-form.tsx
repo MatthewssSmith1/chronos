@@ -1,9 +1,9 @@
 "use client"
 
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "../select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChronosEvent, useChronos } from "./chronos"
 import { useForm, useFormContext } from "react-hook-form"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 import { z } from "zod"
 
 const EventSchema = z.object({
@@ -53,7 +54,12 @@ export function EventForm({ event, onSubmit, className, ...props }: FormProps) {
   return (
     <PopoverContent className="w-min min-w-[400px]" {...props}>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} onMouseDown={(e) => e.stopPropagation()} className="space-y-4">
+        <form 
+          onSubmit={form.handleSubmit(onSubmit)} 
+          onKeyDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()} 
+          className="space-y-4"
+        >
           <h2 className="text-xl font-bold mb-4">{event ? "Edit event" : "Create event"}</h2>
 
           <FormField
@@ -112,7 +118,7 @@ export function EventForm({ event, onSubmit, className, ...props }: FormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Textarea placeholder="Description" {...field} />
+                  <Textarea placeholder="Description" className="max-h-36" {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -145,52 +151,44 @@ function TimeRangeSection() {
     <FormField
       control={form.control}
       name="allDay"
-      render={({ field }) => (
-        <FormItem>
-          <Tabs value={field.value ? "date" : "datetime"} onValueChange={(value: string) => field.onChange(value === "date")} className="w-full gap-3">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="datetime">Date & Time</TabsTrigger>
-              <TabsTrigger value="date">Date Only</TabsTrigger>
-            </TabsList>
-            <TabsContent value="datetime">
-              <div className="grid grid-cols-[auto_1fr_auto] grid-rows-2 gap-y-3">
-                <DateTimeField name="start" />
-                <DateTimeField name="end" />
-              </div>
-            </TabsContent>
-            <TabsContent value="date">
-              <Calendar
-                initialFocus
-                mode="range"
-                numberOfMonths={2}
-                defaultMonth={form.watch("start")}
-                selected={{ from: form.watch("start"), to: form.watch("end") }}
-                onSelect={(range) => {
-                  if (!range?.from) return;
-                  form.setValue("start", range.from);
-                  form.setValue("end", range.to || range.from);
-                }}
-              />
-            </TabsContent>
-          </Tabs>
-        </FormItem>
-      )}
+      render={({ field }) => {
+        const showTimes = !field.value;
+        return (
+          <FormItem>
+            <Tabs 
+              value={showTimes ? "datetime" : "date"} 
+              onValueChange={(value: string) => field.onChange(value === "date")} 
+              className="w-full gap-4"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="datetime">Times</TabsTrigger>
+                <TabsTrigger value="date">Full Days</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div className={cn(
+              "grid items-center gap-x-3 gap-y-4 grid-rows-2",
+              showTimes ? 'grid-cols-[auto_1fr_auto]' : 'grid-cols-[auto_1fr]'
+            )}>
+              <DateTimeField name="start" showTime={showTimes} />
+              <DateTimeField name="end" showTime={showTimes} />
+            </div>
+          </FormItem>
+        );
+      }}
     />
   );
 }
 
-function DateTimeField({ name }: { name: "start" | "end" }) {
+function DateTimeField({ name, showTime }: { name: "start" | "end", showTime: boolean }) {
   const form = useFormContext<EventType>();
 
   const validateAndUpdateRange = (newDate: Date) => {
     const otherField = name === "start" ? "end" : "start";
-    const otherValue = form.getValues(otherField);
+    const otherDate = form.getValues(otherField);
 
-    if (name === "start" && newDate > otherValue) {
-      form.setValue(otherField, newDate);
-    } else if (name === "end" && newDate < otherValue) {
-      form.setValue(otherField, newDate);
-    }
+    if (name === "start" && newDate > otherDate) form.setValue(otherField, newDate);
+    else if (name === "end" && newDate < otherDate) form.setValue(otherField, newDate);
+
     return newDate;
   };
 
@@ -199,42 +197,47 @@ function DateTimeField({ name }: { name: "start" | "end" }) {
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem className="col-span-full grid grid-cols-subgrid items-center gap-x-2">
-          <p className="capitalize">{name}:</p>
-          <Popover>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button variant="outline" className="flex-1">
-                  {format(field.value || new Date(), "PP")}
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={field.value}
-                onSelect={(date) => {
-                  if (!date) return
-                  const currentTime = field.value;
-                  date.setHours(currentTime.getHours())
-                  date.setMinutes(currentTime.getMinutes())
-                  field.onChange(validateAndUpdateRange(date))
-                }}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          <Input
-            type="time"
-            value={field.value ? format(field.value, "HH:mm") : ""}
-            onChange={(e) => {
-              const [hours, minutes] = e.target.value.split(":")
-              const newDate = new Date(field.value)
-              newDate.setHours(parseInt(hours))
-              newDate.setMinutes(parseInt(minutes))
-              field.onChange(validateAndUpdateRange(newDate))
-            }}
-          />
+        <FormItem className="col-span-full gap grid-cols-subgrid items-center gap-x-2">
+          <p className="capitalize whitespace-nowrap pl-1">{name}:</p>
+          <div className="flex-1">
+            <Popover>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button variant="outline" className="w-full">
+                    {format(field.value, "PP")}
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  initialFocus
+                  selected={field.value}
+                  onSelect={(date) => {
+                    if (!date) return
+                    const time = field.value;
+                    date.setHours(time.getHours())
+                    date.setMinutes(time.getMinutes())
+                    field.onChange(validateAndUpdateRange(date))
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          {showTime && (
+            <Input
+              type="time"
+              className="w-auto"
+              value={field.value ? format(field.value, "HH:mm") : ""}
+              onChange={(e) => {
+                const [hours, minutes] = e.target.value.split(":")
+                const newDate = new Date(field.value)
+                newDate.setHours(parseInt(hours))
+                newDate.setMinutes(parseInt(minutes))
+                field.onChange(validateAndUpdateRange(newDate))
+              }}
+            />
+          )}
         </FormItem>
       )}
     />
