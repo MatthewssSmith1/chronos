@@ -1,15 +1,9 @@
 "use client"
 
 import { useState, useEffect, useMemo, useContext, useCallback, createContext, ReactNode } from "react"
-import { ChevronLeftIcon, ChevronRightIcon, CalendarPlusIcon, CheckIcon } from "lucide-react"
-import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { SegmentGroup, ButtonSegment } from "./segmented-button"
-import { Popover, PopoverTrigger } from "@/components/ui/popover"
-import * as SelectPrimitive from "@radix-ui/react-select"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import ChronosControls from "./chronos-controls"
 import { ChronosView } from "./chronos-view"
-import { EventForm } from "./event-form"
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 export type ChronosCategory = {
@@ -29,8 +23,8 @@ export type ChronosEvent = {
   categoryId?: string
 }
 
-const VIEWS = ["day", "week", "month", "year", "list"] as const
-type ViewType = typeof VIEWS[number]
+export const VIEWS = ["day", "week", "month", "year", "list"] as const
+export type ViewType = typeof VIEWS[number]
 
 type ChronosContextType = {
   events: ChronosEvent[]
@@ -41,21 +35,100 @@ type ChronosContextType = {
   setSelectedDate: (date: Date) => void
   offsetPeriod: (direction: number) => void
   goToToday: () => void
+  onCreateEvent?: (event: ChronosEvent) => void | Promise<void | ChronosEvent>
+  onEditEvent?: (event: ChronosEvent) => void | Promise<void | ChronosEvent>
+  onDeleteEvent?: (eventId: string) => void | Promise<void>
+  createEvent: (event: Omit<ChronosEvent, "id">) => Promise<void>
+  updateEvent: (event: ChronosEvent) => Promise<void>
+  deleteEvent: (eventId: string) => Promise<void>
+  colorOfEvent: (event: ChronosEvent) => string
 }
 
 const ChronosContext = createContext<ChronosContextType | undefined>(undefined)
 
 export function ChronosProvider({
   children,
-  events,
-  categories
+  initialEvents,
+  categories,
+  onCreateEvent,
+  onEditEvent,
+  onDeleteEvent
 }: {
   children: ReactNode
-  events: ChronosEvent[]
+  initialEvents: ChronosEvent[]
   categories: ChronosCategory[]
+  onCreateEvent?: (event: ChronosEvent) => void | Promise<void | ChronosEvent>
+  onEditEvent?: (event: ChronosEvent) => void | Promise<void | ChronosEvent>
+  onDeleteEvent?: (eventId: string) => void | Promise<void>
 }) {
+  const [events, setEvents] = useState<ChronosEvent[]>(initialEvents)
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [viewType, setViewType] = useState<ViewType>("week")
+
+  useEffect(() => {
+    setEvents(initialEvents)
+  }, [initialEvents])
+
+  const colorOfEvent = useCallback((event: ChronosEvent) => {
+    const category = categories.find(cat => cat.id === event.categoryId)
+    return category?.color ?? "#a1a1a1"
+  }, [categories])
+
+  const createEvent = useCallback(async (eventData: Omit<ChronosEvent, "id">) => {
+    const tempId = `temp-${Date.now()}`
+    const newEvent = { ...eventData, id: tempId } as ChronosEvent
+    
+    setEvents(prev => [...prev, newEvent])
+    
+    try {
+      if (onCreateEvent) {
+        const result = await Promise.resolve(onCreateEvent(newEvent));
+        if (result && typeof result === 'object' && 'id' in result) {
+          setEvents(prev => prev.map(e => e.id === tempId ? result : e))
+        }
+      }
+    } catch (error) {
+      setEvents(prev => prev.filter(e => e.id !== tempId))
+      console.error("Error creating event:", error)
+    }
+  }, [onCreateEvent])
+
+  const updateEvent = useCallback(async (updatedEvent: ChronosEvent) => {
+    const originalEvent = events.find(e => e.id === updatedEvent.id)
+    
+    setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e))
+    
+    try {
+      if (onEditEvent) {
+        const result = await Promise.resolve(onEditEvent(updatedEvent));
+        if (result && typeof result === 'object' && 'id' in result) {
+          setEvents(prev => prev.map(e => e.id === updatedEvent.id ? result : e))
+        }
+      }
+    } catch (error) {
+      if (originalEvent) {
+        setEvents(prev => prev.map(e => e.id === updatedEvent.id ? originalEvent : e))
+      }
+      console.error("Error updating event:", error)
+    }
+  }, [events, onEditEvent])
+
+  const deleteEvent = useCallback(async (eventId: string) => {
+    const originalEvent = events.find(e => e.id === eventId)
+    
+    setEvents(prev => prev.filter(e => e.id !== eventId))
+    
+    try {
+      if (onDeleteEvent) {
+        await onDeleteEvent(eventId)
+      }
+    } catch (error) {
+      if (originalEvent) {
+        setEvents(prev => [...prev, originalEvent])
+      }
+      console.error("Error deleting event:", error)
+    }
+  }, [events, onDeleteEvent])
 
   const offsetPeriod = useCallback((direction: number) => {
     setSelectedDate((currentDate) => {
@@ -110,8 +183,29 @@ export function ChronosProvider({
       setSelectedDate,
       offsetPeriod,
       goToToday,
+      onCreateEvent,
+      onEditEvent,
+      onDeleteEvent,
+      createEvent,
+      updateEvent,
+      deleteEvent,
+      colorOfEvent
     }),
-    [events, categories, viewType, selectedDate, offsetPeriod, goToToday]
+    [
+      events, 
+      categories, 
+      viewType, 
+      selectedDate, 
+      offsetPeriod, 
+      goToToday, 
+      onCreateEvent, 
+      onEditEvent, 
+      onDeleteEvent,
+      createEvent,
+      updateEvent,
+      deleteEvent,
+      colorOfEvent
+    ]
   )
 
   return (
@@ -141,118 +235,8 @@ export function useDayEvents(date: Date) {
 export function Chronos({ className }: { className?: string }) {
   return (
     <div className={cn("w-full h-full flex flex-col gap-4 p-4", className)}>
-      <div className="flex items-center justify-between px-2 gap-2 sm:gap-4">
-        <TimePeriodText />
-        <DateNavigator />
-        <div className="flex-1 hidden sm:inline-block" />
-        <ViewSelect />
-        <NewEventButton /> 
-      </div>
+      <ChronosControls />
       <ChronosView />
     </div>
-  )
-}
-
-function TimePeriodText() {
-  const { viewType, selectedDate } = useChronos()
-
-  const getText = () => {
-    const fmtDate = (date: Date, opts: Intl.DateTimeFormatOptions) => date.toLocaleDateString('en-US', opts)
-
-    switch (viewType) {
-      case 'week': {
-        const start = new Date(selectedDate)
-        start.setDate(selectedDate.getDate() - selectedDate.getDay())
-        const end = new Date(start)
-        end.setDate(start.getDate() + 6)
-
-        if (start.getMonth() === end.getMonth())
-          return fmtDate(start, { month: 'long', year: 'numeric' })
-
-        const startMonth = fmtDate(start, { month: 'short' })
-        const endMonth = fmtDate(end, { month: 'short' })
-        return `${startMonth} - ${endMonth} ${start.getFullYear()}`
-      }
-      case 'month':
-        return fmtDate(selectedDate, { month: 'long', year: 'numeric' })
-      case 'year':
-        return fmtDate(selectedDate, { year: 'numeric' })
-      case 'day':
-      case 'list':
-      default:
-        return fmtDate(selectedDate, { month: 'long', day: 'numeric', year: 'numeric' })
-    }
-  }
-
-  return <h1 className="text-2xl font-semibold truncate">{getText()}</h1>
-}
-
-function DateNavigator() {
-  const { offsetPeriod, goToToday } = useChronos()
-
-  return (
-    <SegmentGroup>
-      <ButtonSegment onClick={() => offsetPeriod(-1)}>
-        <ChevronLeftIcon className="size-4 pointer-events-none shrink-0" />
-      </ButtonSegment>
-      <ButtonSegment onClick={goToToday} className="hidden sm:inline-block">Today</ButtonSegment>
-      <ButtonSegment onClick={() => offsetPeriod(1)}>
-        <ChevronRightIcon className="size-4 pointer-events-none shrink-0" />
-      </ButtonSegment>
-    </SegmentGroup>
-  )
-}
-
-function ViewSelect() {
-  const { viewType, setViewType } = useChronos()
-
-  function Item({ value }: { value: ViewType }) {
-    return (
-      <SelectPrimitive.Item
-        value={value}
-        data-slot="select-item"
-        className={cn(
-          "focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center cursor-pointer",
-          "gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        )}
-      >
-        <span className="absolute right-2 flex size-3.5 items-center justify-center">
-          <SelectPrimitive.ItemIndicator>
-            <CheckIcon className="size-4 shrink-0 text-muted-foreground pointer-events-none" />
-          </SelectPrimitive.ItemIndicator>
-        </span>
-        <SelectPrimitive.ItemText className="">
-          <span className="capitalize">{value}</span>
-        </SelectPrimitive.ItemText>
-        <span className="ml-auto text-muted-foreground/70 w-3 text-center">{value.charAt(0)}</span>
-      </SelectPrimitive.Item>
-    )
-  }
-
-  return (
-    <Select value={viewType} onValueChange={setViewType}>
-      <SelectTrigger className="w-28">
-        <SelectValue placeholder="Select a view" />
-      </SelectTrigger>
-      <SelectContent>
-        {VIEWS.map((view, idx) => (
-          <Item key={idx} value={view} />
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
-
-function NewEventButton() {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button className="gap-2">
-          <CalendarPlusIcon />
-          <span className="hidden sm:inline">New event</span>
-        </Button>
-      </PopoverTrigger>
-      <EventForm onSubmit={console.log} align="end" alignOffset={-8} />
-    </Popover>
   )
 }

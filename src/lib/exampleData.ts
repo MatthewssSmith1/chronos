@@ -388,5 +388,419 @@ export const EVENTS: ChronosEvent[] = [
     description: "Monthly family game night",
     categoryId: "5",
     location: "Dad's House"
+  },
+  {
+    id: "41",
+    title: "March Planning Meeting",
+    start: new Date("2025-03-01T09:00:00"),
+    end: new Date("2025-03-01T11:00:00"),
+    description: "Monthly planning session with team",
+    categoryId: "1",
+    location: "Conference Room A"
+  },
+  {
+    id: "42",
+    title: "Weekend Hike",
+    start: new Date("2025-03-01T14:00:00"),
+    end: new Date("2025-03-01T17:00:00"),
+    description: "Hiking at nature reserve",
+    categoryId: "4",
+    location: "Eagle Mountain Trail"
+  },
+  {
+    id: "43",
+    title: "Sunday Brunch",
+    start: new Date("2025-03-02T11:00:00"),
+    end: new Date("2025-03-02T13:00:00"),
+    description: "Brunch with friends",
+    categoryId: "3",
+    location: "Sunrise Cafe"
+  },
+  {
+    id: "44",
+    title: "Home Organization",
+    start: new Date("2025-03-02T15:00:00"),
+    end: new Date("2025-03-02T18:00:00"),
+    description: "Spring cleaning and organization",
+    categoryId: "2",
+    location: "Home"
+  },
+  {
+    id: "45",
+    title: "Sprint Kickoff",
+    start: new Date("2025-03-03T09:30:00"),
+    end: new Date("2025-03-03T11:30:00"),
+    description: "Start of new development sprint",
+    categoryId: "1",
+    location: "Main Conference Room"
+  },
+  {
+    id: "46",
+    title: "Dentist Follow-up",
+    start: new Date("2025-03-03T15:00:00"),
+    end: new Date("2025-03-03T16:00:00"),
+    description: "Follow-up appointment",
+    categoryId: "4",
+    location: "Dr. Smith's Dental Office"
+  },
+  {
+    id: "47",
+    title: "Book Club Meeting",
+    start: new Date("2025-03-04T19:00:00"),
+    end: new Date("2025-03-04T21:00:00"),
+    description: "Discussion of 'The Midnight Library'",
+    categoryId: "3",
+    location: "City Library"
+  },
+  {
+    id: "48",
+    title: "Team Workshop",
+    start: new Date("2025-03-05T10:00:00"),
+    end: new Date("2025-03-05T12:30:00"),
+    description: "Agile methodology workshop",
+    categoryId: "1",
+    location: "Training Room B"
+  },
+  {
+    id: "49",
+    title: "Grocery Shopping",
+    start: new Date("2025-03-05T17:30:00"),
+    end: new Date("2025-03-05T18:30:00"),
+    description: "Weekly grocery run",
+    categoryId: "2",
+    location: "Whole Foods Market"
+  },
+  {
+    id: "50",
+    title: "Parent-Teacher Meeting",
+    start: new Date("2025-03-06T16:00:00"),
+    end: new Date("2025-03-06T17:00:00"),
+    description: "Discuss academic progress",
+    categoryId: "5",
+    location: "Lincoln Elementary School"
+  },
+  {
+    id: "51",
+    title: "Movie Night",
+    start: new Date("2025-03-06T19:30:00"),
+    end: new Date("2025-03-06T22:00:00"),
+    description: "Watch new release with friends",
+    categoryId: "3",
+    location: "Cineplex Downtown"
+  },
+  {
+    id: "52",
+    title: "Code Review",
+    start: new Date("2025-03-07T14:00:00"),
+    end: new Date("2025-03-07T15:30:00"),
+    description: "Review pull requests",
+    categoryId: "1",
+    location: "Virtual - Zoom"
+  },
+  {
+    id: "53",
+    title: "Weekend Market",
+    start: new Date("2025-03-08T09:00:00"),
+    end: new Date("2025-03-08T11:00:00"),
+    description: "Visit farmers market",
+    categoryId: "2",
+    location: "Downtown Market Square"
+  },
+  {
+    id: "54",
+    title: "Yoga Class",
+    start: new Date("2025-03-08T16:00:00"),
+    end: new Date("2025-03-08T17:30:00"),
+    description: "Vinyasa flow class",
+    categoryId: "4",
+    location: "Zen Yoga Studio"
+  },
+  {
+    id: "55",
+    title: "Family Dinner",
+    start: new Date("2025-03-09T18:00:00"),
+    end: new Date("2025-03-09T20:30:00"),
+    description: "Monthly family dinner",
+    categoryId: "5",
+    location: "Mom's House"
+  },
+  {
+    id: "56",
+    title: "Client Presentation",
+    start: new Date("2025-03-10T10:00:00"),
+    end: new Date("2025-03-10T12:00:00"),
+    description: "Present project progress",
+    categoryId: "1",
+    location: "Client HQ"
+  },
+  {
+    id: "57",
+    title: "Car Maintenance",
+    start: new Date("2025-03-10T15:00:00"),
+    end: new Date("2025-03-10T16:30:00"),
+    description: "Oil change and inspection",
+    categoryId: "2",
+    location: "AutoCare Center"
+  },
+  {
+    id: "58",
+    title: "Basketball Game",
+    start: new Date("2025-03-11T19:00:00"),
+    end: new Date("2025-03-11T21:00:00"),
+    description: "Local league game",
+    categoryId: "4",
+    location: "Community Center"
+  },
+  {
+    id: "59",
+    title: "Team Lunch",
+    start: new Date("2025-03-12T12:00:00"),
+    end: new Date("2025-03-12T13:30:00"),
+    description: "Monthly team bonding lunch",
+    categoryId: "1",
+    location: "Italian Restaurant"
+  },
+  {
+    id: "60",
+    title: "Coffee with Alex",
+    start: new Date("2025-03-12T16:00:00"),
+    end: new Date("2025-03-12T17:00:00"),
+    description: "Catch up over coffee",
+    categoryId: "3",
+    location: "Starbucks Downtown"
+  },
+  {
+    id: "61",
+    title: "Doctor's Appointment",
+    start: new Date("2025-03-13T10:30:00"),
+    end: new Date("2025-03-13T11:30:00"),
+    description: "Annual physical checkup",
+    categoryId: "4",
+    location: "Medical Center"
+  },
+  {
+    id: "62",
+    title: "Home Repairs",
+    start: new Date("2025-03-14T14:00:00"),
+    end: new Date("2025-03-14T16:00:00"),
+    description: "Fix bathroom sink",
+    categoryId: "2",
+    location: "Home"
+  },
+  {
+    id: "63",
+    title: "Game Night",
+    start: new Date("2025-03-14T19:00:00"),
+    end: new Date("2025-03-14T23:00:00"),
+    description: "Board games with friends",
+    categoryId: "3",
+    location: "Jake's Place"
+  },
+  {
+    id: "64",
+    title: "Weekend Run",
+    start: new Date("2025-03-15T08:00:00"),
+    end: new Date("2025-03-15T09:30:00"),
+    description: "10k training run",
+    categoryId: "4",
+    location: "Riverside Park"
+  },
+  {
+    id: "65",
+    title: "Shopping Trip",
+    start: new Date("2025-03-15T13:00:00"),
+    end: new Date("2025-03-15T16:00:00"),
+    description: "Spring wardrobe shopping",
+    categoryId: "2",
+    location: "Downtown Mall"
+  },
+  {
+    id: "66",
+    title: "Family Movie",
+    start: new Date("2025-03-16T15:00:00"),
+    end: new Date("2025-03-16T17:30:00"),
+    description: "Watch new animated film",
+    categoryId: "5",
+    location: "Cinema City"
+  },
+  {
+    id: "67",
+    title: "Design Review",
+    start: new Date("2025-03-17T10:00:00"),
+    end: new Date("2025-03-17T11:30:00"),
+    description: "Review new UI designs",
+    categoryId: "1",
+    location: "Design Lab"
+  },
+  {
+    id: "68",
+    title: "Cooking Class",
+    start: new Date("2025-03-17T18:00:00"),
+    end: new Date("2025-03-17T20:00:00"),
+    description: "Asian cuisine basics",
+    categoryId: "2",
+    location: "Culinary Institute"
+  },
+  {
+    id: "69",
+    title: "Tech Meetup",
+    start: new Date("2025-03-18T18:00:00"),
+    end: new Date("2025-03-18T20:00:00"),
+    description: "Local developer networking",
+    categoryId: "1",
+    location: "Tech Hub"
+  },
+  {
+    id: "70",
+    title: "Massage Appointment",
+    start: new Date("2025-03-19T16:00:00"),
+    end: new Date("2025-03-19T17:00:00"),
+    description: "Monthly relaxation massage",
+    categoryId: "4",
+    location: "Wellness Spa"
+  },
+  {
+    id: "71",
+    title: "Art Exhibition",
+    start: new Date("2025-03-20T18:30:00"),
+    end: new Date("2025-03-20T20:30:00"),
+    description: "Local artists showcase",
+    categoryId: "3",
+    location: "City Gallery"
+  },
+  {
+    id: "72",
+    title: "Spring Equinox Celebration",
+    start: new Date("2025-03-21T17:00:00"),
+    end: new Date("2025-03-21T19:00:00"),
+    description: "Community celebration of spring",
+    categoryId: "5",
+    location: "Community Park"
+  },
+  {
+    id: "73",
+    title: "Weekend Workshop",
+    start: new Date("2025-03-22T10:00:00"),
+    end: new Date("2025-03-22T13:00:00"),
+    description: "DIY home decor workshop",
+    categoryId: "2",
+    location: "Craft Center"
+  },
+  {
+    id: "74",
+    title: "Cycling Group",
+    start: new Date("2025-03-22T15:00:00"),
+    end: new Date("2025-03-22T17:00:00"),
+    description: "Group cycling event",
+    categoryId: "4",
+    location: "Lakeside Trail"
+  },
+  {
+    id: "75",
+    title: "Sunday Brunch",
+    start: new Date("2025-03-23T11:00:00"),
+    end: new Date("2025-03-23T13:00:00"),
+    description: "Brunch with college friends",
+    categoryId: "3",
+    location: "Cafe Sunrise"
+  },
+  {
+    id: "76",
+    title: "Project Deadline",
+    start: new Date("2025-03-24T09:00:00"),
+    end: new Date("2025-03-24T17:00:00"),
+    description: "Final submission of Q1 project",
+    categoryId: "1",
+    location: "Office"
+  },
+  {
+    id: "77",
+    title: "Parent-Teacher Conference",
+    start: new Date("2025-03-25T16:00:00"),
+    end: new Date("2025-03-25T17:00:00"),
+    description: "End of quarter progress review",
+    categoryId: "5",
+    location: "Lincoln Elementary School"
+  },
+  {
+    id: "78",
+    title: "Team Building",
+    start: new Date("2025-03-26T13:00:00"),
+    end: new Date("2025-03-26T17:00:00"),
+    description: "Outdoor team building activities",
+    categoryId: "1",
+    location: "Adventure Park"
+  },
+  {
+    id: "79",
+    title: "Concert",
+    start: new Date("2025-03-27T19:30:00"),
+    end: new Date("2025-03-27T22:30:00"),
+    description: "Live music performance",
+    categoryId: "3",
+    location: "City Concert Hall"
+  },
+  {
+    id: "80",
+    title: "Quarterly Review",
+    start: new Date("2025-03-28T10:00:00"),
+    end: new Date("2025-03-28T12:00:00"),
+    description: "Q1 performance review",
+    categoryId: "1",
+    location: "Meeting Room C"
+  },
+  {
+    id: "81",
+    title: "Dinner Party",
+    start: new Date("2025-03-28T19:00:00"),
+    end: new Date("2025-03-28T22:00:00"),
+    description: "Dinner party with neighbors",
+    categoryId: "3",
+    location: "Home"
+  },
+  {
+    id: "82",
+    title: "Weekend Getaway Planning",
+    start: new Date("2025-03-29T10:00:00"),
+    end: new Date("2025-03-29T12:00:00"),
+    description: "Plan upcoming weekend trip",
+    categoryId: "2",
+    location: "Home"
+  },
+  {
+    id: "83",
+    title: "Fitness Class",
+    start: new Date("2025-03-29T15:00:00"),
+    end: new Date("2025-03-29T16:00:00"),
+    description: "HIIT workout class",
+    categoryId: "4",
+    location: "Fitness Plus Gym"
+  },
+  {
+    id: "84",
+    title: "Family Game Day",
+    start: new Date("2025-03-30T14:00:00"),
+    end: new Date("2025-03-30T17:00:00"),
+    description: "Board games with family",
+    categoryId: "5",
+    location: "Sister's House"
+  },
+  {
+    id: "85",
+    title: "Month-End Reports",
+    start: new Date("2025-03-31T09:00:00"),
+    end: new Date("2025-03-31T12:00:00"),
+    description: "Prepare monthly reports",
+    categoryId: "1",
+    location: "Office"
+  },
+  {
+    id: "86",
+    title: "Haircut Appointment",
+    start: new Date("2025-03-31T16:30:00"),
+    end: new Date("2025-03-31T17:30:00"),
+    description: "Regular haircut",
+    categoryId: "2",
+    location: "Style Studio"
   }
 ]

@@ -1,22 +1,25 @@
 "use client"
 
-import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "../select"
+import { Select, SelectContent, SelectTrigger, SelectValue } from "../select"
+import { ChronosCategory, ChronosEvent, useChronos } from "./chronos"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ChronosEvent, useChronos } from "./chronos"
 import { useForm, useFormContext } from "react-hook-form"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
+import * as SelectPrimitive from "@radix-ui/react-select"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Separator } from "@/components/ui/separator"
+import { useEffect } from "react"
 import { Calendar } from "@/components/ui/calendar"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { Input } from "@/components/ui/input"
+import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import React from "react"
 import { z } from "zod"
-import { useEffect } from "react"
 
 const EventSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
@@ -38,16 +41,12 @@ type FormProps = React.ComponentProps<typeof PopoverPrimitive.Content> & {
 
 export function EventForm({ onSubmit, onEventChanged, event, className, editMode = false, ...props }: FormProps) {
   const { categories } = useChronos()
-  const defaultCategoryId = categories.length > 0 ? categories[0].id : undefined
 
   const form = useForm<EventType>({
     resolver: zodResolver(EventSchema),
-    defaultValues: event ? {
-      ...event,
-      categoryId: defaultCategoryId
-    } : {
+    defaultValues: event ?? {
       title: "",
-      categoryId: defaultCategoryId,
+      categoryId: categories[0].id,
       start: new Date(),
       end: new Date(),
       allDay: false,
@@ -58,13 +57,8 @@ export function EventForm({ onSubmit, onEventChanged, event, className, editMode
 
   // Update form values when the event prop changes
   useEffect(() => {
-    if (!event) return
-    
-    form.reset({
-      ...event,
-      categoryId: event.categoryId || defaultCategoryId
-    })
-  }, [event, form, defaultCategoryId])
+    if (event) form.reset(event)
+  }, [event, form])
 
   // Watch for form changes and update preview
   useEffect(() => {
@@ -132,10 +126,7 @@ export function EventForm({ onSubmit, onEventChanged, event, className, editMode
                     </FormControl>
                     <SelectContent>
                       {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id.toString()}>
-                          <span className="size-3 mr-1 rounded-full" style={{ backgroundColor: category.color }} />
-                          {category.name}
-                        </SelectItem>
+                        <CategorySelectItem key={category.id} category={category} />
                       ))}
                     </SelectContent>
                   </Select>
@@ -176,6 +167,24 @@ export function EventForm({ onSubmit, onEventChanged, event, className, editMode
   )
 }
 
+const CategorySelectItem = ({ category }: { category: ChronosCategory }) => (
+  <SelectPrimitive.Item
+    value={category.id.toString()}
+    className={"relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 cursor-pointer"}
+  >
+    <span className="size-3 rounded-full mr-2" style={{ backgroundColor: category.color }} />
+
+    <SelectPrimitive.ItemText>{category.name}</SelectPrimitive.ItemText>
+
+    <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+      <SelectPrimitive.ItemIndicator>
+        <Check className="h-4 w-4" />
+      </SelectPrimitive.ItemIndicator>
+    </span>
+
+  </SelectPrimitive.Item>
+)
+
 function TimeRangeSection() {
   const form = useFormContext<EventType>();
 
@@ -186,7 +195,7 @@ function TimeRangeSection() {
       render={({ field }) => {
         const showTimes = !field.value;
         return (
-          <FormItem className="gap-4">
+          <FormItem className="flex flex-col space-y-0 gap-4">
             <Tabs 
               value={showTimes ? "datetime" : "date"} 
               onValueChange={(value: string) => field.onChange(value === "date")} 
@@ -229,7 +238,7 @@ function DateTimeField({ name, showTime }: { name: "start" | "end", showTime: bo
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem className="col-span-full gap grid-cols-subgrid items-center gap-x-2">
+        <FormItem className="col-span-full grid grid-cols-subgrid items-center gap-x-2 space-y-0">
           <p className="capitalize whitespace-nowrap pl-1">{name}:</p>
           <div className="flex-1">
             <Popover>
@@ -259,7 +268,7 @@ function DateTimeField({ name, showTime }: { name: "start" | "end", showTime: bo
           {showTime && (
             <Input
               type="time"
-              className="w-auto"
+              className="w-auto mt-0"
               value={field.value ? format(field.value, "HH:mm") : ""}
               onChange={(e) => {
                 const [hours, minutes] = e.target.value.split(":")

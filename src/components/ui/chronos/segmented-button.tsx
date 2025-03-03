@@ -7,7 +7,7 @@ export function SegmentGroup({ children }: { children: ReactNode | ReactNode[] }
   return (
     <div className={cn(
       "inline-flex items-stretch justify-center whitespace-nowrap text-sm font-medium min-h-9",
-      "border border-input shadow-xs isolate rounded-md [&>*]:first:rounded-l-md [&>*]:last:rounded-r-md",
+      "border border-input shadow-xs isolate rounded-md [&>*:first-child]:rounded-l-md [&>*:last-child]:rounded-r-md",
     )}>
       {children}
     </div>
