@@ -221,17 +221,6 @@ export function useChronos() {
   return context
 }
 
-export function useDayEvents(date: Date) {
-  const { events } = useChronos()
-
-  return useMemo(
-    () => events
-      .filter(event => event.start.toDateString() === date.toDateString())
-      .sort((a, b) => a.start.getTime() - b.start.getTime()),
-    [events, date]
-  )
-}
-
 export function Chronos({ className }: { className?: string }) {
   return (
     <div className={cn("w-full h-full flex flex-col gap-4 p-4", className)}>
