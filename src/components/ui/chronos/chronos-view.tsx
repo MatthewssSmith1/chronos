@@ -115,3 +115,5 @@ export function useDateColors(date: Date) {
 }
 
 export const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString()
+
+export const timeAscending = (a: Date, b: Date) => a.getTime() - b.getTime()

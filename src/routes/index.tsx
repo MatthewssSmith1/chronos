@@ -15,6 +15,8 @@ function HomeComponent() {
   };
 
   const handleEditEvent = async (event: ChronosEvent): Promise<ChronosEvent> => {
+    console.log("Editing event:", event);
+
     await new Promise(resolve => setTimeout(resolve, 500));
     
     return event;

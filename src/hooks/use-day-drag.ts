@@ -78,7 +78,7 @@ export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Da
     window.addEventListener('mousemove', onMouseMove)
     window.addEventListener('mouseup', onMouseUp)
     document.body.style.userSelect = 'none'
-    document.body.style.cursor = 'move'
+    document.body.style.cursor = 'ns-resize'
     
     return () => {
       window.removeEventListener('mousemove', onMouseMove)

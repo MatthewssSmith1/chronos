@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useCallback, useRef, RefObject, MouseEvent as ReactMouseEvent, useMemo } from "react"
-import { DateHeader, useDayEvents } from "./chronos-view"
+import { useState, useCallback, useRef, RefObject, useMemo, MouseEvent as ReactMouseEvent, useEffect } from "react"
+import { DateHeader, useDayEvents, timeAscending } from "./chronos-view"
 import { useChronos, ChronosEvent } from "./chronos"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
 import { cn, formatTimeRange } from "@/lib/utils"
@@ -47,7 +47,7 @@ function TimeColumn() {
 }
 
 function useCreateEventGestures(columnRef: RefObject<HTMLDivElement | null>, date: Date) {
-  const { categories, createEvent } = useChronos()
+  const { categories } = useChronos()
   const [previewEvent, setPreviewEvent] = useState<ChronosEvent | null>(null)
   
   const { isDragging, startDrag } = useDayDrag(columnRef, date)
@@ -58,11 +58,10 @@ function useCreateEventGestures(columnRef: RefObject<HTMLDivElement | null>, dat
     
     startDrag(e, {
       onDragMove: ({ startTime, currentTime }) => {
-        const [start, end] = [startTime, currentTime].sort((a, b) => a.getTime() - b.getTime())
+        const [start, end] = [startTime, currentTime].sort(timeAscending)
         
         setPreviewEvent({ 
           id: 'preview', 
-          title: '', 
           start, 
           end,
           allDay: false,
@@ -86,7 +85,6 @@ function useCreateEventGestures(columnRef: RefObject<HTMLDivElement | null>, dat
   
   return {
     isDragging,
-    createEvent,
     onMouseDown,
     anchorStyle,
     previewEvent,
@@ -98,7 +96,8 @@ function DayColumn({ date, numDays }: { date: Date, numDays: number }) {
   const columnRef = useRef<HTMLDivElement>(null)
   const dayEvents = useDayEvents(date)
 
-  const { isDragging, createEvent, onMouseDown, anchorStyle, previewEvent, setPreviewEvent } = useCreateEventGestures(columnRef, date)
+  const { createEvent, updateEvent } = useChronos()
+  const { isDragging, onMouseDown, anchorStyle, previewEvent, setPreviewEvent } = useCreateEventGestures(columnRef, date)
 
   const index = date.getDay()
   const isLast = index === 6
@@ -111,15 +110,16 @@ function DayColumn({ date, numDays }: { date: Date, numDays: number }) {
       className={cn("flex-1 flex flex-col h-full relative select-none", isLast ? "rounded-br-md" : "border-r")}
     >
       {dayEvents.map(event => (
-        <EventCard key={event.id} event={event} onEventChanged={console.log} />
+        <EventCard key={event.id} event={event} columnRef={columnRef} onEventChanged={updateEvent} />
       ))}
 
       {previewEvent && (
         <Popover open={!isDragging} onOpenChange={(open) => !open && setPreviewEvent(null)}>
-          <PopoverTrigger asChild>
+          <PopoverTrigger>
             <EventCard 
               isPreview 
               event={previewEvent} 
+              columnRef={columnRef}
               isDragging={isDragging}
               onEventChanged={setPreviewEvent} 
             />
@@ -145,26 +145,75 @@ const EventCard = React.forwardRef<
   HTMLDivElement,
   {
     event: ChronosEvent;
+    columnRef: RefObject<HTMLDivElement | null>;
     isPreview?: boolean;
     isDragging?: boolean;
     onEventChanged?: (updatedEvent: ChronosEvent) => void;
   }
->(({ event, isPreview = false, isDragging = false, onEventChanged }, ref) => {
+>(({ event, columnRef, isPreview = false, isDragging = false, onEventChanged }, ref) => {
   const { colorOfEvent } = useChronos();
-  const startHours = event.start.getHours() + (event.start.getMinutes() / 60);
-  const endHours = event.end.getHours() + (event.end.getMinutes() / 60);
+
+  const [start, setStart] = useState(event.start)
+  const [end, setEnd] = useState(event.end)
+
+  useEffect(() => {
+    setStart(event.start)
+    setEnd(event.end)
+  }, [event])
+
+  const { startDrag } = useDayDrag(columnRef, start);
+
+  const startHours = start.getHours() + (start.getMinutes() / 60);
+  const endHours = end.getHours() + (end.getMinutes() / 60);
   const duration = endHours - startHours;
-  
+
   function Subtitle() {
-    let text = formatTimeRange(event.start, event.end);
+    let text = formatTimeRange(start, end);
     if (event.location) text += ` @ ${event.location}`;
-    return (
-      <p className="text-left text-xs text-white truncate pointer-events-none">{text}</p>
-    );
+
+    return <p className="text-left text-xs text-white truncate pointer-events-none">{text}</p>
   }
 
-  const DragHandle = ({className}: {className?: string}) => 
-    <div className={cn("absolute left-0 right-0 h-1 z-10 hover:bg-white/20", className)} />
+  function DragHandle({ isTop }: {isTop: boolean}) {
+    const onMouseDown = useCallback((e: ReactMouseEvent) => {
+      if (!onEventChanged) return;
+
+      const otherTime = isTop ? end : start
+
+      startDrag(e, {
+        onDragMove: ({ currentTime }) => {
+          const [newStart, newEnd] = [otherTime, currentTime].sort(timeAscending)
+
+          if (isPreview) 
+            return onEventChanged({ ...event, start: newStart, end: newEnd })
+        
+          setStart(newStart);
+          setEnd(newEnd);
+        },
+        onDragEnd: ({ endTime }) => {
+          const [newStart, newEnd] = [otherTime, endTime].sort(timeAscending)
+
+          onEventChanged({ 
+            ...event,
+            start: newStart,
+            end: newEnd
+          });
+        }
+      });
+    }, [startDrag, isTop]);
+
+    return (
+      <div 
+        onMouseDown={onMouseDown} 
+        className={cn(
+          "absolute left-0 right-0 h-1 z-10 hover:bg-white/20 cursor-ns-resize",
+          isTop ? "top-0" : "bottom-0"
+        )} 
+      />
+    )
+  }
+
+  // TODO: annoted onMouseDown listener, but for dragging on the div itself to drag the whole card up/down rather than the handles (start/end)
 
   return (
     <div
@@ -184,8 +233,8 @@ const EventCard = React.forwardRef<
     >
       {onEventChanged && (
         <>
-          <DragHandle className="top-0 cursor-n-resize" />
-          <DragHandle className="bottom-0 cursor-s-resize" />
+          <DragHandle isTop={true} />
+          <DragHandle isTop={false} />
         </>
       )}
       <p className="text-left text-sm text-white truncate pointer-events-none font-medium">{event.title?.length ? event.title : "(No title)"}</p>
