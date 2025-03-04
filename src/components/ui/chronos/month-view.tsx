@@ -35,8 +35,8 @@ export function MonthView() {
 
   return (
     <Card className="flex-1 grid grid-cols-7 p-0 gap-0">
-      {dates.map((date, index) => (
-        <DayCell key={index} date={date} index={index} dayCount={dates.length} />
+      {dates.map((date, idx) => (
+        <DayCell key={idx} date={date} index={idx} dayCount={dates.length} />
       ))}
     </Card>
   )

@@ -22,7 +22,7 @@ import React from "react"
 import { z } from "zod"
 
 const EventSchema = z.object({
-  title: z.string().min(2, { message: "Title must be at least 2 characters." }),
+  title: z.string().min(1, { message: "Title must be at least 2 characters." }),
   categoryId: z.string(),
   start: z.date(),
   end: z.date(),
@@ -55,24 +55,14 @@ export function EventForm({ onSubmit, onEventChanged, event, className, editMode
     }
   })
 
-  // Update form values when the event prop changes
   useEffect(() => {
     if (event) form.reset(event)
   }, [event, form])
 
-  // Watch for form changes and update preview
   useEffect(() => {
     if (!onEventChanged || !event) return
     
-    const subscription = form.watch((formValues) => {
-      // Skip incomplete form updates
-      if (!formValues.start || !formValues.end) return
-      
-      onEventChanged({
-        ...event,
-        ...formValues
-      })
-    })
+    const subscription = form.watch((values) => onEventChanged({ ...event, ...values }))
     
     return () => subscription.unsubscribe()
   }, [form, onEventChanged, event])
