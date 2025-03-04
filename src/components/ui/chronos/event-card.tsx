@@ -36,6 +36,7 @@ export const EventCard = React.forwardRef<
   const endHours = end.getHours() + (end.getMinutes() / 60);
   const duration = endHours - startHours;
 
+  // TODO: figure out why subtitle doesn't show when event is at end of day
   function Subtitle() {
     let text = formatTimeRange(start, end);
     if (event.location) text += ` @ ${event.location}`;
@@ -82,15 +83,47 @@ export const EventCard = React.forwardRef<
     )
   }
 
-  // TODO: annoted onMouseDown listener, but for dragging on the div itself to drag the whole card up/down rather than the handles (start/end)
+  const onCardMouseDown = useCallback((e: ReactMouseEvent) => {
+    if (!onEventChanged) return;
+
+    const maxMoveUp = -(start.getHours() * 60 + start.getMinutes()) * 60 * 1000;
+    const maxMoveDown = ((24 * 60) - (end.getHours() * 60) - (end.getMinutes())) * 60 * 1000;
+    
+    const clamp = (value: number) => Math.min(Math.max(value, maxMoveUp), maxMoveDown);
+
+    startDrag(e, {
+      onDragMove: ({ startTime, currentTime }) => {
+        const timeDiff = clamp(currentTime.getTime() - startTime.getTime());
+        
+        const newStart = new Date(start.getTime() + timeDiff);
+        const newEnd = new Date(end.getTime() + timeDiff);
+
+        if (isPreview) return onEventChanged({ ...event, start: newStart, end: newEnd })
+
+        setStart(newStart);
+        setEnd(newEnd);
+      },
+      onDragEnd: ({ startTime, endTime }) => {
+        const timeDiff = clamp(endTime.getTime() - startTime.getTime())
+        
+        onEventChanged({ 
+          ...event, 
+          start: new Date(start.getTime() + timeDiff),
+          end: new Date(end.getTime() + timeDiff)
+        });
+      }
+    });
+  }, [startDrag, start, end, event, onEventChanged]);
 
   return (
     <div
       ref={ref}
+      onMouseDown={onCardMouseDown}
+      onClick={(e) => e.stopPropagation()}
       className={cn(
         "event-card absolute z-40 rounded-md px-1.5 py-1 overflow-hidden cursor-pointer select-none transition-[filter,box-shadow] hover:brightness-110 hover:shadow-sm ", 
-        isPreview ? "preview-event hover:brightness-100 shadow-sm" : "[&:has(~.preview-event)]:pointer-events-none",
-        isDragging && "pointer-events-none"
+        isPreview ? "preview-event hover:brightness-100 shadow-sm" : "[&:has(~:is(.preview-event,.dragging))]:pointer-events-none [.dragging~&]:pointer-events-none",
+        isDragging && "dragging pointer-events-none"
       )}
       style={{
         backgroundColor: colorOfEvent(event),
