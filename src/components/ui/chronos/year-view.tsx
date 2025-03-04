@@ -1,3 +1,5 @@
+"use client"
+
 import { CaptionProps, DayPicker, DayProps } from "react-day-picker"
 import { useDayEvents } from "./chronos-view"
 import { useChronos } from "./chronos"
@@ -28,13 +30,10 @@ function Calendar({ month }: { month: Date }) {
     <DayPicker
       month={month}
       selected={selectedDate}
-      showOutsideDays
       formatters={{
-        formatCaption: (date: Date) => date.toLocaleDateString("en-US", { month: "long" }),
         formatWeekdayName: (date) => date.toLocaleDateString("en-US", { weekday: "short" }).charAt(0)
       }}
       classNames={{
-        months: "flex flex-col gap-2",
         month: "flex flex-col gap-4",
         caption: "flex justify-center pt-1 relative items-center w-full",
         caption_label: "text-base font-semibold",
@@ -44,12 +43,12 @@ function Calendar({ month }: { month: Date }) {
         row: "flex w-full mt-2",
         cell: "relative p-0 text-sm focus-within:z-20 transition-colors w-[calc(1rem+1.5vw)] min-w-8 h-[calc(1rem+1.45vw)] min-h-8",
       }}
-      components={{ Day, Caption }}
+      components={{ Day, Caption: MonthTitle }}
     />
   )
 }
 
-function Caption({ displayMonth }: CaptionProps) {
+function MonthTitle({ displayMonth }: CaptionProps) {
   const { setViewType, setSelectedDate } = useChronos()
 
   const onClick = () => {
@@ -59,7 +58,7 @@ function Caption({ displayMonth }: CaptionProps) {
 
   return (
     <div className="w-full flex flex-row justify-center items-center">
-      <Button variant="ghost" className="p-0 font-semibold px-4 transition-all hover:shadow-sm" onClick={onClick}>
+      <Button variant="ghost" className="p-0 px-4 transition-all hover:shadow-sm text-lg font-semibold" onClick={onClick}>
         {displayMonth.toLocaleDateString("en-US", { month: "long" })}
       </Button>
     </div>

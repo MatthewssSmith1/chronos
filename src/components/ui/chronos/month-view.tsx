@@ -83,7 +83,7 @@ function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCoun
               <PlusIcon />
             </Button>
           </PopoverTrigger>
-          <EventForm onSubmit={console.log} align="center" sideOffset={8} />
+          <EventForm onCreateEvent={console.log} align="center" sideOffset={8} />
         </Popover>
       </div>
     </div>

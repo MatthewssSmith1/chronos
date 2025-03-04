@@ -5,6 +5,7 @@ import { useChronos, ViewType, VIEWS } from "./chronos"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { EventForm } from "./event-form"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -111,15 +112,25 @@ function ViewSelect() {
 }
 
 function NewEventButton() {
+  const [isOpen, setIsOpen] = useState(false)
+  const { createEvent } = useChronos()
+
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button className="gap-2">
           <CalendarPlusIcon />
           <span className="hidden sm:inline">New event</span>
         </Button>
       </PopoverTrigger>
-      <EventForm onSubmit={console.log} align="end" alignOffset={-8} />
+      <EventForm 
+        align="end" 
+        alignOffset={-8} 
+        onCreateEvent={event => {
+          createEvent(event)
+          setIsOpen(false)
+        }}
+      />
     </Popover>
   )
 }

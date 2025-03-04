@@ -14,10 +14,10 @@ export type ChronosCategory = {
 
 export type ChronosEvent = {
   id: string
-  title: string
   start: Date
   end: Date
   allDay?: boolean
+  title?: string
   location?: string
   description?: string
   categoryId?: string

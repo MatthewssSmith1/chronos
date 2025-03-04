@@ -70,6 +70,7 @@ export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Da
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseup', onMouseUp)
       document.body.style.userSelect = ''
+      document.body.style.cursor = ''
       
       setIsDragging(false)
     }
@@ -77,11 +78,13 @@ export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Da
     window.addEventListener('mousemove', onMouseMove)
     window.addEventListener('mouseup', onMouseUp)
     document.body.style.userSelect = 'none'
+    document.body.style.cursor = 'move'
     
     return () => {
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseup', onMouseUp)
       document.body.style.userSelect = ''
+      document.body.style.cursor = ''
     }
   }, [getTimeFromY])
   

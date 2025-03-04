@@ -5,59 +5,60 @@ import { ChronosCategory, ChronosEvent, useChronos } from "./chronos"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useEffect, ComponentProps } from "react"
 import { useForm, useFormContext } from "react-hook-form"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 import * as SelectPrimitive from "@radix-ui/react-select"
+import { Check, XIcon } from "lucide-react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Separator } from "@/components/ui/separator"
-import { useEffect } from "react"
 import { Calendar } from "@/components/ui/calendar"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { Input } from "@/components/ui/input"
-import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
-import React from "react"
 import { z } from "zod"
 
 const EventSchema = z.object({
-  title: z.string().min(1, { message: "Title must be at least 2 characters." }),
-  categoryId: z.string(),
-  start: z.date(),
-  end: z.date(),
-  allDay: z.boolean(),
+  title: z.string().optional(),
   location: z.string().optional(),
   description: z.string().optional(),
+  categoryId: z.string(),
+  allDay: z.boolean(),
+  start: z.date(),
+  end: z.date(),
 })
 type EventType = z.infer<typeof EventSchema>
 
-type FormProps = React.ComponentProps<typeof PopoverPrimitive.Content> & {
-  onSubmit: (data: EventType) => void,
+type FormProps = ComponentProps<typeof PopoverPrimitive.Content> & {
+  onCreateEvent: (data: EventType) => void,
   onEventChanged?: (event: ChronosEvent) => void,
   event?: ChronosEvent,
   editMode?: boolean
 }
 
-export function EventForm({ onSubmit, onEventChanged, event, className, editMode = false, ...props }: FormProps) {
+function defaultEvent(categories: ChronosCategory[]) {
+  let end = new Date()
+  end.setHours(end.getHours() + 1)
+
+  return {
+    categoryId: categories[0].id,
+    allDay: false,
+    start: new Date(),
+    end
+  }
+}
+
+export function EventForm({ onCreateEvent, onEventChanged, event, className, editMode = false, ...props }: FormProps) {
   const { categories } = useChronos()
 
   const form = useForm<EventType>({
     resolver: zodResolver(EventSchema),
-    defaultValues: event ?? {
-      title: "",
-      categoryId: categories[0].id,
-      start: new Date(),
-      end: new Date(),
-      allDay: false,
-      location: "",
-      description: ""
-    }
+    defaultValues: event ?? defaultEvent(categories),
   })
-
-  useEffect(() => {
-    if (event) form.reset(event)
-  }, [event, form])
+  
+  useEffect(() => event && form.reset(event), [event, form])
 
   useEffect(() => {
     if (!onEventChanged || !event) return
@@ -65,18 +66,24 @@ export function EventForm({ onSubmit, onEventChanged, event, className, editMode
     const subscription = form.watch((values) => onEventChanged({ ...event, ...values }))
     
     return () => subscription.unsubscribe()
-  }, [form, onEventChanged, event])
+  }, [event, form, onEventChanged])
 
   return (
     <PopoverContent className="w-min min-w-[400px]" {...props}>
       <Form {...form}>
         <form 
-          onSubmit={form.handleSubmit(onSubmit)} 
+          className="space-y-4"
           onKeyDown={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()} 
-          className="space-y-4"
+          onSubmit={form.handleSubmit(onCreateEvent)}
         >
           <h2 className="text-xl font-bold mb-4">{editMode ? "Edit event" : "Create event"}</h2>
+
+          <PopoverPrimitive.Close asChild>
+            <Button size="sm" variant="ghost" type="button" className="absolute top-4 right-4">
+              <XIcon className="size-4" />
+            </Button>
+          </PopoverPrimitive.Close>
 
           <FormField
             control={form.control}
@@ -115,9 +122,7 @@ export function EventForm({ onSubmit, onEventChanged, event, className, editMode
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categories.map((category) => (
-                        <CategorySelectItem key={category.id} category={category} />
-                      ))}
+                      {categories.map((category) => <CategorySelectItem key={category.id} category={category} />)}
                     </SelectContent>
                   </Select>
                 </FormItem>
@@ -143,13 +148,9 @@ export function EventForm({ onSubmit, onEventChanged, event, className, editMode
 
           <div className="flex justify-center gap-3 pt-4">
             <PopoverPrimitive.Close asChild>
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
+              <Button type="button" variant="outline">Cancel</Button>
             </PopoverPrimitive.Close>
-            <Button type="submit">
-              {editMode ? "Update" : "Create"}
-            </Button>
+            <Button type="submit">{editMode ? "Update" : "Create"}</Button>
           </div>
         </form>
       </Form>
@@ -234,9 +235,7 @@ function DateTimeField({ name, showTime }: { name: "start" | "end", showTime: bo
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
-                  <Button variant="outline" className="w-full">
-                    {format(field.value, "PP")}
-                  </Button>
+                  <Button variant="outline" className="w-full">{format(field.value, "PP")}</Button>
                 </FormControl>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">

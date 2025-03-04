@@ -47,7 +47,7 @@ function TimeColumn() {
 }
 
 function useCreateEventGestures(columnRef: RefObject<HTMLDivElement | null>, date: Date) {
-  const { categories } = useChronos()
+  const { categories, createEvent } = useChronos()
   const [previewEvent, setPreviewEvent] = useState<ChronosEvent | null>(null)
   
   const { isDragging, startDrag } = useDayDrag(columnRef, date)
@@ -65,10 +65,10 @@ function useCreateEventGestures(columnRef: RefObject<HTMLDivElement | null>, dat
           title: '', 
           start, 
           end,
+          allDay: false,
           categoryId: categories[0].id
-        })
+        } as ChronosEvent)
       },
-      // onDragEnd: () => {}
     })
   }, [startDrag])
   
@@ -85,11 +85,12 @@ function useCreateEventGestures(columnRef: RefObject<HTMLDivElement | null>, dat
   }, [previewEvent])
   
   return {
-    onMouseDown,
     isDragging,
+    createEvent,
+    onMouseDown,
+    anchorStyle,
     previewEvent,
     setPreviewEvent,
-    anchorStyle
   }
 }
 
@@ -97,7 +98,7 @@ function DayColumn({ date, numDays }: { date: Date, numDays: number }) {
   const columnRef = useRef<HTMLDivElement>(null)
   const dayEvents = useDayEvents(date)
 
-  const { onMouseDown, isDragging, previewEvent, setPreviewEvent, anchorStyle } = useCreateEventGestures(columnRef, date)
+  const { isDragging, createEvent, onMouseDown, anchorStyle, previewEvent, setPreviewEvent } = useCreateEventGestures(columnRef, date)
 
   const index = date.getDay()
   const isLast = index === 6
@@ -116,15 +117,23 @@ function DayColumn({ date, numDays }: { date: Date, numDays: number }) {
       {previewEvent && (
         <Popover open={!isDragging} onOpenChange={(open) => !open && setPreviewEvent(null)}>
           <PopoverTrigger asChild>
-            <EventCard event={previewEvent} className="preview-event hover:brightness-100 shadow-sm" onEventChanged={setPreviewEvent} />
+            <EventCard 
+              isPreview 
+              event={previewEvent} 
+              isDragging={isDragging}
+              onEventChanged={setPreviewEvent} 
+            />
           </PopoverTrigger>
           <PopoverPrimitive.Anchor className="absolute left-0 right-0" style={anchorStyle} />
           <EventForm 
+            align="center" 
+            side={firstHalf ? "right" : "left"} 
             event={previewEvent} 
             onEventChanged={setPreviewEvent}
-            onSubmit={console.log} 
-            side={firstHalf ? "right" : "left"} 
-            align="center" 
+            onCreateEvent={event => {
+              setPreviewEvent(null)
+              createEvent(event)
+            }} 
           />
         </Popover>
       )}
@@ -136,10 +145,11 @@ const EventCard = React.forwardRef<
   HTMLDivElement,
   {
     event: ChronosEvent;
-    className?: string;
+    isPreview?: boolean;
+    isDragging?: boolean;
     onEventChanged?: (updatedEvent: ChronosEvent) => void;
   }
->(({ event, className, onEventChanged }, ref) => {
+>(({ event, isPreview = false, isDragging = false, onEventChanged }, ref) => {
   const { colorOfEvent } = useChronos();
   const startHours = event.start.getHours() + (event.start.getMinutes() / 60);
   const endHours = event.end.getHours() + (event.end.getMinutes() / 60);
@@ -153,14 +163,17 @@ const EventCard = React.forwardRef<
     );
   }
 
-  const DragHandle = ({className}: {className?: string}) => (
+  const DragHandle = ({className}: {className?: string}) => 
     <div className={cn("absolute left-0 right-0 h-1 z-10 hover:bg-white/20", className)} />
-  )
 
   return (
     <div
       ref={ref}
-      className={cn("event-card absolute z-40 rounded-md px-1.5 py-1 overflow-hidden cursor-pointer select-none transition-[filter,box-shadow] hover:brightness-110 hover:shadow-sm [&:has(~&.preview-event)]:pointer-events-none", className)}
+      className={cn(
+        "event-card absolute z-40 rounded-md px-1.5 py-1 overflow-hidden cursor-pointer select-none transition-[filter,box-shadow] hover:brightness-110 hover:shadow-sm ", 
+        isPreview ? "preview-event hover:brightness-100 shadow-sm" : "[&:has(~.preview-event)]:pointer-events-none",
+        isDragging && "pointer-events-none"
+      )}
       style={{
         backgroundColor: colorOfEvent(event),
         top: `${startHours * PX_PER_HOUR + EVENT_PADDING}px`,
@@ -175,10 +188,8 @@ const EventCard = React.forwardRef<
           <DragHandle className="bottom-0 cursor-s-resize" />
         </>
       )}
-      <p className="text-left text-sm text-white truncate pointer-events-none font-medium">{event.title.length === 0 ? "(No title)" : event.title}</p>
+      <p className="text-left text-sm text-white truncate pointer-events-none font-medium">{event.title?.length ? event.title : "(No title)"}</p>
       {duration > 0.5 && <Subtitle />}
     </div>
   );
 });
-
-EventCard.displayName = "EventCard";
