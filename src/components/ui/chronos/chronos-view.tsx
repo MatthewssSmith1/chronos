@@ -1,10 +1,10 @@
 "use client"
 
+import { ReactNode, useMemo } from "react"
 import { useChronos } from "./chronos"
 import { MonthView } from "./month-view"
 import { DaysView } from "./days-view"
 import { YearView } from "./year-view"
-import { useMemo } from "react"
 import { cn } from "@/lib/utils"
 
 export function ChronosView() {
@@ -51,31 +51,46 @@ function ScheduleView() {
 }
 
 export function DateHeader({ date, hideWeekday = false, className }: { date: Date, hideWeekday?: boolean, className?: string }) {
-  const textStyle = "mx-auto text-xs sm:text-sm font-medium text-muted-foreground"
+  const { setViewType, setSelectedDate } = useChronos()
+
+  function onClick() {
+    setSelectedDate(date)
+    setViewType("day")
+  }
+
+  const Text = ({ className, children }: { className?: string, children?: ReactNode | ReactNode[] }) =>
+    <p className={cn("mx-auto text-xs sm:text-sm font-medium transition-colors pointer-events-none", className)}>{children}</p>
 
   function WeekdayText() {
     const text = date.toLocaleDateString('en-US', { weekday: 'short' })
     const firstLetter = text.charAt(0)
     const rest = text.slice(1)
 
-    return <p className={textStyle}>{firstLetter}<span className="hidden sm:inline">{rest}</span></p>
+    return <Text className="text-muted-foreground">{firstLetter}<span className="hidden sm:inline">{rest}</span></Text>
   }
 
   function DateText() {
-    const isToday = date.toDateString() === new Date().toDateString()
+    const colors = useDateColors(date)
 
     return (
-      <div className={cn("size-6 sm:size-7 mx-auto flex items-center justify-center rounded-full", isToday && "bg-primary")}>
-        <p className={cn(textStyle, isToday && "text-primary-foreground")}>{date.getDate()}</p>
+      <div className={cn(
+        "size-6 sm:size-7 mx-auto flex items-center justify-center rounded-full transition-colors pointer-events-none", 
+        colors
+      )}>
+        <Text className={cn(
+          "text-inherit"
+        )}>
+          {date.getDate()}
+        </Text>
       </div>
     )
   }
 
   return (
-    <div className={cn("flex flex-col", className)}>
+    <button onClick={onClick} className={cn("flex flex-col cursor-pointer hover:bg-muted/80 active:bg-muted transition-colors", className)}>
       {!hideWeekday && <WeekdayText />}
       <DateText />
-    </div>
+    </button>
   )
 }
 
@@ -84,8 +99,19 @@ export function useDayEvents(date: Date) {
 
   return useMemo(
     () => events
-      .filter(event => event.start.toDateString() === date.toDateString())
+      .filter(event => isSameDay(event.start, date))
       .sort((a, b) => a.start.getTime() - b.start.getTime()),
     [events, date]
   )
 }
+
+export function useDateColors(date: Date) {
+  const { selectedDate } = useChronos()
+
+  if (isSameDay(date, selectedDate)) return "bg-primary/80 hover:bg-primary/90 !text-primary-foreground"
+  else if (isSameDay(date, new Date())) return "bg-primary/20 hover:bg-primary/30"
+
+  return ""
+}
+
+export const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString()

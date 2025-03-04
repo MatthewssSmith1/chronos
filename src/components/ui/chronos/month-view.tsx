@@ -1,7 +1,7 @@
 "use client"
 
 import { useChronos, ChronosEvent, ChronosCategory } from "./chronos"
-import { DateHeader, useDayEvents } from "./chronos-view"
+import { DateHeader, useDayEvents, isSameDay } from "./chronos-view"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
 import { cn, formatTime } from "@/lib/utils"
 import { EventForm } from "./event-form"
@@ -17,14 +17,14 @@ function useMonthDates() {
     const firstOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
     const lastOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0)
     
-    const countFromPrevMonth = firstOfMonth.getDay()
-    const countFromNextMonth = (6 - lastOfMonth.getDay())
+    const prevMonthCount = firstOfMonth.getDay()
+    const nextMonthCount = (6 - lastOfMonth.getDay())
     
-    const totalDays = countFromPrevMonth + lastOfMonth.getDate() + countFromNextMonth
+    const totalDays = prevMonthCount + lastOfMonth.getDate() + nextMonthCount
     
     return Array.from({ length: totalDays }, (_, i) => {
       const date = new Date(firstOfMonth)
-      date.setDate(1 - countFromPrevMonth + i)
+      date.setDate(1 - prevMonthCount + i)
       return date
     })
   }, [selectedDate])
@@ -43,8 +43,9 @@ export function MonthView() {
 }
 
 function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCount: number }) {
-  const { selectedDate, categories } = useChronos()
+  const { categories, selectedDate, setSelectedDate, setViewType } = useChronos()
 
+  const isSelected = isSameDay(date, selectedDate)
   const currentMonth = date.getMonth() === selectedDate.getMonth()
   const [firstRow, lastRow] = [index < 7, index >= dayCount - 7]
   const [firstCol, lastCol] = [index % 7 === 0, index % 7 === 6]
@@ -53,6 +54,7 @@ function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCoun
   
   return (
     <div
+      onClick={() => isSelected ? setViewType("day") : setSelectedDate(date)}
       className={cn(
         "group flex flex-col h-full p-1 cursor-pointer hover:not-[&:has(>*:hover)]:bg-muted/70 transition-colors",
         currentMonth && "bg-muted/40 ",
@@ -76,10 +78,7 @@ function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCoun
         
         <Popover>
           <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              className="h-6 w-full flex items-center justify-center rounded-sm bg-primary/5 hover:bg-primary/10 hover:shadow-sm opacity-0 group-hover:opacity-100 aria-expanded:opacity-100 transition-all"
-            >
+            <Button variant="ghost" className="h-6 w-full flex items-center justify-center rounded-sm bg-primary/5 hover:bg-primary/10 hover:shadow-sm opacity-0 group-hover:opacity-100 aria-expanded:opacity-100 transition-all">
               <PlusIcon />
             </Button>
           </PopoverTrigger>

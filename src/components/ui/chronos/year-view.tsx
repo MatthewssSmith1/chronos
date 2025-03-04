@@ -1,7 +1,7 @@
 "use client"
 
+import { useDateColors, useDayEvents, isSameDay } from "./chronos-view"
 import { CaptionProps, DayPicker, DayProps } from "react-day-picker"
-import { useDayEvents } from "./chronos-view"
 import { useChronos } from "./chronos"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -67,19 +67,14 @@ function MonthTitle({ displayMonth }: CaptionProps) {
 
 function Day({ date, displayMonth }: DayProps) {
   const { selectedDate, setSelectedDate, colorOfEvent, setViewType } = useChronos()
+  const colors = useDateColors(date)
   const events = useDayEvents(date)
 
-  const isSelected = date.toDateString() === selectedDate.toDateString()
-  const isToday = date.toDateString() === new Date().toDateString()
-  const isOutside = date.getMonth() !== displayMonth.getMonth()
-
+  const isSelected = isSameDay(date, selectedDate)
   const onClick = () => (isSelected) ? setViewType("week") : setSelectedDate(date)
 
+  const isOutside = date.getMonth() !== displayMonth.getMonth()
   if (isOutside) return null
-
-  let colors = ""
-  if (isSelected) colors = "bg-primary/80 hover:bg-primary/90 !text-primary-foreground"
-  else if (isToday) colors = "bg-primary/20 hover:bg-primary/30"
 
   return (
     <Button

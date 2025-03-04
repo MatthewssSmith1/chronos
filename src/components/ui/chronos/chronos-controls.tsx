@@ -3,9 +3,9 @@ import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/
 import { SegmentGroup, ButtonSegment } from "./segmented-button"
 import { useChronos, ViewType, VIEWS } from "./chronos"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
+import { useMemo, useState } from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { EventForm } from "./event-form"
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -24,7 +24,7 @@ export default function ChronosControls() {
 function TimePeriodText() {
   const { viewType, selectedDate } = useChronos()
 
-  const getText = () => {
+  const text = useMemo(() => {
     const fmtDate = (date: Date, opts: Intl.DateTimeFormatOptions) => date.toLocaleDateString('en-US', opts)
 
     switch (viewType) {
@@ -50,9 +50,9 @@ function TimePeriodText() {
       default:
         return fmtDate(selectedDate, { month: 'long', day: 'numeric', year: 'numeric' })
     }
-  }
+  }, [viewType, selectedDate])
 
-  return <h1 className="text-2xl font-semibold truncate">{getText()}</h1>
+  return <h1 className="text-2xl font-semibold truncate">{text}</h1>
 }
 
 function DateNavigator() {
@@ -74,40 +74,39 @@ function DateNavigator() {
 function ViewSelect() {
   const { viewType, setViewType } = useChronos()
 
-  function Item({ value }: { value: ViewType }) {
-    return (
-      <SelectPrimitive.Item
-        value={value}
-        data-slot="select-item"
-        className={cn(
-          "focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center cursor-pointer",
-          "gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        )}
-      >
-        <span className="absolute right-2 flex size-3.5 items-center justify-center">
-          <SelectPrimitive.ItemIndicator>
-            <CheckIcon className="size-4 shrink-0 text-muted-foreground pointer-events-none" />
-          </SelectPrimitive.ItemIndicator>
-        </span>
-        <SelectPrimitive.ItemText className="">
-          <span className="capitalize">{value}</span>
-        </SelectPrimitive.ItemText>
-        <span className="ml-auto text-muted-foreground/70 w-3 text-center">{value.charAt(0)}</span>
-      </SelectPrimitive.Item>
-    )
-  }
-
   return (
     <Select value={viewType} onValueChange={setViewType}>
       <SelectTrigger className="w-28">
         <SelectValue placeholder="Select a view" />
       </SelectTrigger>
       <SelectContent>
-        {VIEWS.map((view, idx) => (
-          <Item key={idx} value={view} />
-        ))}
+        {VIEWS.map((view, idx) => <ViewOption key={idx} value={view} />)}
       </SelectContent>
     </Select>
+  )
+}
+
+function ViewOption({ value }: { value: ViewType }) {
+  return (
+    <SelectPrimitive.Item
+      value={value}
+      data-slot="select-item"
+      className={cn(
+        "relative flex w-full items-center cursor-pointer gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm",
+        "focus:bg-accent focus:text-accent-foreground outline-hidden select-none",
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      )}
+    >
+      <span className="absolute right-2 flex size-3.5 items-center justify-center">
+        <SelectPrimitive.ItemIndicator>
+          <CheckIcon className="size-4 shrink-0 text-muted-foreground pointer-events-none" />
+        </SelectPrimitive.ItemIndicator>
+      </span>
+      <SelectPrimitive.ItemText className="">
+        <span className="capitalize">{value}</span>
+      </SelectPrimitive.ItemText>
+      <span className="ml-auto text-muted-foreground/70 w-3 text-center">{value.charAt(0)}</span>
+    </SelectPrimitive.Item>
   )
 }
 
