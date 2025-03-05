@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useContext, useCallback, createContext, ReactNode } from "react"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { CSSProperties } from "react"
 import ChronosControls from "./chronos-controls"
 import { ChronosView } from "./chronos-view"
 import { cn } from "@/lib/utils"
@@ -41,7 +42,7 @@ type ChronosContextType = {
   createEvent: (event: Omit<ChronosEvent, "id">) => Promise<void>
   updateEvent: (event: ChronosEvent) => Promise<void>
   deleteEvent: (eventId: string) => Promise<void>
-  colorOfEvent: (event: ChronosEvent) => string
+  colorOfEvent: (event: ChronosEvent) => CSSProperties
 }
 
 const ChronosContext = createContext<ChronosContextType | undefined>(undefined)
@@ -69,10 +70,9 @@ export function ChronosProvider({
     setEvents(initialEvents)
   }, [initialEvents])
 
-  const colorOfEvent = useCallback((event: ChronosEvent) => {
-    const category = categories.find(cat => cat.id === event.categoryId)
-    return category?.color ?? "#a1a1a1"
-  }, [categories])
+  const colorOfEvent = useCallback((event: ChronosEvent) => ({
+    backgroundColor: categories.find(c => c.id === event.categoryId)?.color ?? "#a1a1a1"
+  }), [categories])
 
   const createEvent = useCallback(async (eventData: Omit<ChronosEvent, "id">) => {
     const tempId = `temp-${Date.now()}`

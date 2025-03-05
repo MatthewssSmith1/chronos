@@ -76,7 +76,7 @@ export const EventCard = React.forwardRef<
       <div 
         onMouseDown={onMouseDown} 
         className={cn(
-          "absolute left-0 right-0 h-1 z-10 hover:bg-white/20 cursor-ns-resize",
+          "absolute left-0 right-0 h-1 z-10 hover:bg-white/20 transition-colors cursor-ns-resize",
           isTop ? "top-0" : "bottom-0"
         )} 
       />
@@ -126,7 +126,7 @@ export const EventCard = React.forwardRef<
         isDragging && "dragging pointer-events-none"
       )}
       style={{
-        backgroundColor: colorOfEvent(event),
+        ...colorOfEvent(event),
         top: `${startHours * PX_PER_HOUR + EVENT_PADDING}px`,
         height: `${duration * PX_PER_HOUR - EVENT_PADDING * 2}px`,
         left: `${EVENT_PADDING}px`,

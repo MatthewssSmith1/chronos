@@ -1,14 +1,20 @@
 "use client"
 
 import { useDateColors, useDayEvents, isSameDay } from "./chronos-view"
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { CaptionProps, DayPicker, DayProps } from "react-day-picker"
+import * as PopoverPrimitive from "@radix-ui/react-popover"
 import { useChronos } from "./chronos"
+import { EventLine } from "./event-line"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { XIcon } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
 export function YearView() {
-  const { selectedDate } = useChronos()
+  const { selectedDate, setSelectedDate } = useChronos()
+  const [popoverAnchor, setPopoverAnchor] = useState<HTMLElement | null>(null)
 
   const months = Array.from({ length: 12 }, (_, i) => {
     const month = new Date(selectedDate)
@@ -16,34 +22,54 @@ export function YearView() {
     return month
   })
 
+  const handleDayClick = (day: Date, element: HTMLElement) => {
+    setSelectedDate(day)
+    setPopoverAnchor(element)
+  }
+
   return (
-    <Card className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-[3vw] py-4 lg:py-[4vh] sm:px-[2vw] overflow-y-auto">
-      {months.map((month, idx) => <Calendar key={idx} month={month} />)}
-    </Card>
+    <>
+      <Card className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-[3vw] py-4 lg:py-[4vh] sm:px-[2vw] overflow-y-auto">
+        {months.map((month, idx) => (
+          <Calendar key={idx} month={month} onDayClick={handleDayClick} />
+        ))}
+      </Card>
+      {popoverAnchor && (
+        <Popover open={popoverAnchor !== null} onOpenChange={open => !open && setPopoverAnchor(null)}>
+          <PopoverAnchor className="fixed"
+            style={{
+              top: `${popoverAnchor.getBoundingClientRect().bottom + window.scrollY + 4}px`,
+              left: `${popoverAnchor.getBoundingClientRect().left + window.scrollX}px`,
+            }} />
+          <DayPopoverContent />
+        </Popover>
+      )}
+    </>
   )
 }
 
-function Calendar({ month }: { month: Date }) {
+function Calendar({ month, onDayClick }: { month: Date, onDayClick: (day: Date, element: HTMLElement) => void }) {
   const { selectedDate } = useChronos()
+
+  const formatWeekdayName = (date: Date) => date.toLocaleDateString("en-US", { weekday: "short" }).charAt(0)
 
   return (
     <DayPicker
       month={month}
       selected={selectedDate}
-      formatters={{
-        formatWeekdayName: (date) => date.toLocaleDateString("en-US", { weekday: "short" }).charAt(0)
-      }}
+      formatters={{ formatWeekdayName }}
       classNames={{
         month: "flex flex-col gap-4",
-        caption: "flex justify-center pt-1 relative items-center w-full",
-        caption_label: "text-base font-semibold",
         table: "mx-auto border-collapse space-x-1",
         head_row: "flex",
         head_cell: "text-muted-foreground rounded-md w-[calc(1rem+1.5vw)] min-w-8 font-normal text-[0.8rem] pointer-events-none",
         row: "flex w-full mt-2",
         cell: "relative p-0 text-sm focus-within:z-20 transition-colors w-[calc(1rem+1.5vw)] min-w-8 h-[calc(1rem+1.45vw)] min-h-8",
       }}
-      components={{ Day, Caption: MonthTitle }}
+      components={{
+        Day: (props) => <Day {...props} onDayClick={onDayClick} />,
+        Caption: MonthTitle
+      }}
     />
   )
 }
@@ -65,21 +91,17 @@ function MonthTitle({ displayMonth }: CaptionProps) {
   )
 }
 
-function Day({ date, displayMonth }: DayProps) {
-  const { selectedDate, setSelectedDate, colorOfEvent, setViewType } = useChronos()
+function Day({ date, displayMonth, onDayClick }: DayProps & { onDayClick: (day: Date, element: HTMLElement) => void }) {
+  const { selectedDate, colorOfEvent, setViewType } = useChronos()
   const colors = useDateColors(date)
   const events = useDayEvents(date)
 
-  const isSelected = isSameDay(date, selectedDate)
-  const onClick = () => (isSelected) ? setViewType("week") : setSelectedDate(date)
-
-  const isOutside = date.getMonth() !== displayMonth.getMonth()
-  if (isOutside) return null
+  if (date.getMonth() !== displayMonth.getMonth()) return null
 
   return (
     <Button
       variant="ghost"
-      onClick={onClick}
+      onClick={e => isSameDay(date, selectedDate) ? setViewType("week") : onDayClick(date, e.currentTarget)}
       className={cn(
         "w-full h-full p-0 rounded-md font-normal cursor-pointer transition-all hover:shadow-sm active:opacity-90",
         colors
@@ -93,9 +115,45 @@ function Day({ date, displayMonth }: DayProps) {
       </span>
       <div className="absolute bottom-1/6 flex flex-row gap-0.5 pointer-events-none">
         {events.filter((_, i) => i < 3).map((event) => (
-          <div key={event.id} className="size-[5px] bg-primary rounded-full" style={{ backgroundColor: colorOfEvent(event) }} />
+          <div key={event.id} className="size-[5px] bg-primary rounded-full" style={colorOfEvent(event)} />
         ))}
       </div>
     </Button>
+  )
+}
+
+function DayPopoverContent() {
+  const { selectedDate, setSelectedDate, setViewType } = useChronos()
+  const events = useDayEvents(selectedDate)
+
+  return (
+    <PopoverContent className="w-auto p-0">
+      <div className="relative p-4 pt-3 max-w-[300px]">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="font-medium truncate mr-8">
+            {selectedDate.toLocaleDateString("en-US", { weekday: 'short', month: 'short', day: 'numeric' })}
+          </h3>
+          <PopoverPrimitive.Close asChild>
+            <Button variant="ghost" size="sm" className="absolute top-2 right-2 size-8">
+              <XIcon className="h-4 w-4" />
+            </Button>
+          </PopoverPrimitive.Close>
+        </div>
+
+        {events.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No events</p>
+        ) : (
+          <div className="space-y-3 max-h-[300px]">
+            {events.map((event) => (
+              <EventLine
+                key={event.id}
+                event={event}
+                onClick={() => { setViewType("day"); setSelectedDate(event.start) }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </PopoverContent>
   )
 }

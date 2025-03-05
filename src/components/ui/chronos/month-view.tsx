@@ -1,14 +1,15 @@
 "use client"
 
-import { useChronos, ChronosEvent, ChronosCategory } from "./chronos"
 import { DateHeader, useDayEvents, isSameDay } from "./chronos-view"
+import { useChronos, ChronosEvent } from "./chronos"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
 import { useMemo, useState } from "react"
-import { cn, formatTime } from "@/lib/utils"
 import { EventForm } from "./event-form"
+import { EventLine } from "./event-line"
 import { PlusIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 function useMonthDates() {
   const { selectedDate } = useChronos()
@@ -34,7 +35,7 @@ export function MonthView() {
   const dates = useMonthDates()
 
   return (
-    <Card className="flex-1 grid grid-cols-7 grid-rows-[repeat(6,1fr)] p-0 gap-0">
+    <Card className="flex-1 grid grid-cols-7 p-0 gap-0" style={{ gridTemplateRows: `repeat(${dates.length / 7}, minmax(0, 1fr))` }}>
       {dates.map((date, idx) => (
         <DayCell key={idx} date={date} index={idx} dayCount={dates.length} />
       ))}
@@ -67,7 +68,9 @@ function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCoun
     >
       <DateHeader date={date} hideWeekday={!firstRow} className="py-1 pointer-events-none" />
       <div className="flex flex-col gap-0.5" onClick={(e) => e.stopPropagation()}>
-        {dayEvents.map(event => <EventLine key={event.id} event={event} />)}
+        <div className="flex flex-col gap-0.5 overflow-hidden">
+          {dayEvents.map(event => <EventLine key={event.id} event={event} variant="compact" />)}
+        </div>
 
         <Popover open={previewEvent !== null} onOpenChange={(open) => {
           if (!open) return setPreviewEvent(null)
@@ -99,20 +102,6 @@ function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCoun
           />
         </Popover>
       </div>
-    </div>
-  )
-}
-
-function EventLine({ event }: { event: ChronosEvent }) {
-  const { colorOfEvent } = useChronos()
-
-  return (
-    <div className="flex flex-row items-center justify-center sm:justify-start gap-1.5 px-1.5 py-0.5 rounded hover:bg-primary/10 transition-colors text-xs font-medium [&>*]:pointer-events-none">
-      <div className="size-2 rounded-full shrink-0" style={{ backgroundColor: colorOfEvent(event) }} />
-      <p className="text-muted-foreground hidden md:inline-block">{formatTime(event.start)}</p>
-      <p className="truncate hidden sm:inline-block">
-        {event.title}{event.location && <>{' @ '}{event.location}</>}
-      </p>
     </div>
   )
 }
