@@ -15,7 +15,7 @@ export const PX_PER_HOUR = 75
 
 export function DaysView({ dates, className }: { dates: Date[], className?: string }) {
   return (
-    <Card className={cn("flex-1 p-0 grid grid-rows-[auto_1fr] gap-0 isolate overflow-y-auto overflow-x-hidden", className)}>
+    <Card className={cn("flex-1 p-0 grid grid-rows-[auto_1fr] gap-0 isolate overflow-y-auto overflow-x-hidden transition-colors", className)}>
       <div className="row-start-1 col-start-1" />
       {dates.map((date, idx) => (
         <DateHeader key={idx} date={date} className="sticky top-0 z-50 py-2 bg-background/80 border-b" />
@@ -32,11 +32,11 @@ function TimeColumn() {
   const times = Array.from({ length: 24 }, (_, i) => `${(i % 12) + 1} ${i < 11 ? "AM" : "PM"}`)
 
   return (
-    <div className="w-[70px] relative [&>*]:relative [&>*:last-child>*]:hidden">
+    <div className="w-12 sm:w-20 relative [&>*]:relative [&>*:last-child>*]:hidden">
       {times.map((time, i) => (
         <div key={i} style={{ height: `${PX_PER_HOUR}px` }}>
-          <div className="absolute right-1/2 bottom-0 translate-x-1/2 translate-y-[9px]">
-            <p className="text-sm text-muted-foreground whitespace-nowrap">{time}</p>
+          <div className="absolute right-1/2 bottom-px translate-x-1/2 translate-y-1/2">
+            <p className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">{time}</p>
           </div>
           <div className="absolute bottom-0 left-full w-screen h-[1px] bg-border z-10" />
         </div>
