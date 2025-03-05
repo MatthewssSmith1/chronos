@@ -36,12 +36,12 @@ export function YearView() {
       </Card>
       {popoverAnchor && (
         <Popover open={popoverAnchor !== null} onOpenChange={open => !open && setPopoverAnchor(null)}>
+          <DayPopoverContent />
           <PopoverAnchor className="fixed"
             style={{
               top: `${popoverAnchor.getBoundingClientRect().bottom + window.scrollY + 4}px`,
               left: `${popoverAnchor.getBoundingClientRect().left + window.scrollX}px`,
             }} />
-          <DayPopoverContent />
         </Popover>
       )}
     </>
