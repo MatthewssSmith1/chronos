@@ -450,7 +450,6 @@ export const EVENTS: ChronosEvent[] = [
     end: new Date("2025-03-04T21:00:00"),
     description: "Discussion of 'The Midnight Library'",
     categoryId: "3",
-    location: "City Library"
   },
   {
     id: "48",

@@ -3,10 +3,10 @@
 import { useChronos, ChronosEvent, ChronosCategory } from "./chronos"
 import { DateHeader, useDayEvents, isSameDay } from "./chronos-view"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
+import { useMemo, useState } from "react"
 import { cn, formatTime } from "@/lib/utils"
 import { EventForm } from "./event-form"
 import { PlusIcon } from "lucide-react"
-import { useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
@@ -34,7 +34,7 @@ export function MonthView() {
   const dates = useMonthDates()
 
   return (
-    <Card className="flex-1 grid grid-cols-7 p-0 gap-0">
+    <Card className="flex-1 grid grid-cols-7 grid-rows-[repeat(6,1fr)] p-0 gap-0">
       {dates.map((date, idx) => (
         <DayCell key={idx} date={date} index={idx} dayCount={dates.length} />
       ))}
@@ -43,18 +43,17 @@ export function MonthView() {
 }
 
 function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCount: number }) {
-  const { categories, selectedDate, setSelectedDate, setViewType } = useChronos()
+  const { categories, selectedDate, setSelectedDate, setViewType, createEvent } = useChronos()
+  const [previewEvent, setPreviewEvent] = useState<ChronosEvent | null>(null)
+  const dayEvents = useDayEvents(date, previewEvent)
 
-  const isSelected = isSameDay(date, selectedDate)
   const currentMonth = date.getMonth() === selectedDate.getMonth()
   const [firstRow, lastRow] = [index < 7, index >= dayCount - 7]
   const [firstCol, lastCol] = [index % 7 === 0, index % 7 === 6]
   
-  const dayEvents = useDayEvents(date)
-  
   return (
     <div
-      onClick={() => isSelected ? setViewType("day") : setSelectedDate(date)}
+      onClick={() => isSameDay(date, selectedDate) ? setViewType("day") : setSelectedDate(date)}
       className={cn(
         "group flex flex-col h-full p-1 cursor-pointer hover:not-[&:has(>*:hover)]:bg-muted/70 transition-colors",
         currentMonth && "bg-muted/40 ",
@@ -67,34 +66,53 @@ function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCoun
       )}
     >
       <DateHeader date={date} hideWeekday={!firstRow} className="py-1 pointer-events-none" />
-      <div className="flex flex-col gap-0.5">
-        {dayEvents.map(event => (
-          <EventLine 
-            key={event.id} 
-            event={event} 
-            category={categories.find(c => c.id === event.categoryId) ?? categories[0]} 
-          />
-        ))}
-        
-        <Popover>
+      <div className="flex flex-col gap-0.5" onClick={(e) => e.stopPropagation()}>
+        {dayEvents.map(event => <EventLine key={event.id} event={event} />)}
+
+        <Popover open={previewEvent !== null} onOpenChange={(open) => {
+          if (!open) return setPreviewEvent(null)
+
+          if (previewEvent) return
+
+          setPreviewEvent({
+            id: 'preview',
+            allDay: false,
+            start: new Date(date),
+            end: new Date(date),
+            categoryId: categories[0].id
+          })
+        }}>
           <PopoverTrigger asChild>
             <Button variant="ghost" className="h-6 w-full flex items-center justify-center rounded-sm bg-primary/5 hover:bg-primary/10 hover:shadow-sm opacity-0 group-hover:opacity-100 aria-expanded:opacity-100 transition-all">
               <PlusIcon />
             </Button>
           </PopoverTrigger>
-          <EventForm onCreateEvent={console.log} align="center" sideOffset={8} />
+          <EventForm 
+            onCreateEvent={(data) => {
+              createEvent(data)
+              setPreviewEvent(null)
+            }} 
+            event={previewEvent ?? undefined}
+            onEventChanged={setPreviewEvent}
+            align="center" 
+            sideOffset={8} 
+          />
         </Popover>
       </div>
     </div>
   )
 }
 
-function EventLine({ event, category }: { event: ChronosEvent, category: ChronosCategory }) {
+function EventLine({ event }: { event: ChronosEvent }) {
+  const { colorOfEvent } = useChronos()
+
   return (
     <div className="flex flex-row items-center justify-center sm:justify-start gap-1.5 px-1.5 py-0.5 rounded hover:bg-primary/10 transition-colors text-xs font-medium [&>*]:pointer-events-none">
-      <div className="size-2 rounded-full shrink-0" style={{ backgroundColor: category.color }} />
+      <div className="size-2 rounded-full shrink-0" style={{ backgroundColor: colorOfEvent(event) }} />
       <p className="text-muted-foreground hidden md:inline-block">{formatTime(event.start)}</p>
-      <p className="truncate hidden sm:inline-block">{event.title}</p>
+      <p className="truncate hidden sm:inline-block">
+        {event.title}{event.location && <>{' @ '}{event.location}</>}
+      </p>
     </div>
   )
 }

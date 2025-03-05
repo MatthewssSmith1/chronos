@@ -75,6 +75,7 @@ export function EventForm({ onCreateEvent, onEventChanged, event, className, edi
           className="space-y-4"
           onKeyDown={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()} 
+          onClick={(e) => e.stopPropagation()}
           onSubmit={form.handleSubmit(onCreateEvent)}
         >
           <h2 className="text-xl font-bold mb-4">{editMode ? "Edit event" : "Create event"}</h2>
@@ -118,7 +119,9 @@ export function EventForm({ onCreateEvent, onEventChanged, event, className, edi
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
+                        <div className="size-3 mr-2 rounded-full shrink-0" style={{ backgroundColor: categories.find(c => c.id === field.value)?.color }} />
                         <SelectValue placeholder="Select category" />
+                        <span className="flex-1" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>

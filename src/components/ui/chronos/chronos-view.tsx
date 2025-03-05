@@ -1,7 +1,7 @@
 "use client"
 
 import { ReactNode, useMemo } from "react"
-import { useChronos } from "./chronos"
+import { ChronosEvent, useChronos } from "./chronos"
 import { MonthView } from "./month-view"
 import { DaysView } from "./days-view"
 import { YearView } from "./year-view"
@@ -74,7 +74,7 @@ export function DateHeader({ date, hideWeekday = false, className }: { date: Dat
 
     return (
       <div className={cn(
-        "size-6 sm:size-7 mx-auto flex items-center justify-center rounded-full transition-colors pointer-events-none", 
+        "size-6 sm:size-7 mx-auto flex items-center justify-center rounded-full transition-colors pointer-events-none",
         colors
       )}>
         <Text className={cn(
@@ -94,15 +94,16 @@ export function DateHeader({ date, hideWeekday = false, className }: { date: Dat
   )
 }
 
-export function useDayEvents(date: Date) {
-  const { events } = useChronos()
+export function useDayEvents(date: Date, previewEvent: ChronosEvent | null = null) {
+  let { events } = useChronos()
 
-  return useMemo(
-    () => events
+  return useMemo(() => {
+    if (previewEvent) events = [...events, previewEvent]
+
+    return events
       .filter(event => isSameDay(event.start, date))
-      .sort((a, b) => a.start.getTime() - b.start.getTime()),
-    [events, date]
-  )
+      .sort((a, b) => a.start.getTime() - b.start.getTime())
+  }, [events, date, previewEvent])
 }
 
 export function useDateColors(date: Date) {
