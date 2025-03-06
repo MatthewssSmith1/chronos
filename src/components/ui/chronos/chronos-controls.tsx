@@ -1,3 +1,5 @@
+"use client"
+
 import { ChevronLeftIcon, ChevronRightIcon, CalendarPlusIcon, CheckIcon, CalendarFoldIcon } from "lucide-react"
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useMemo, useState, ReactNode } from "react"
@@ -10,7 +12,7 @@ import { EventForm } from "./event-form"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-export default function ChronosControls() {
+export function ChronosControls() {
   return (
     <div className="relative flex items-center justify-between sm:px-2 gap-2 sm:gap-4">
       <TimePeriodText />
@@ -47,7 +49,6 @@ function TimePeriodText() {
       case 'year':
         return fmtDate(selectedDate, { year: 'numeric' })
       case 'day':
-      case 'list':
       default:
         return fmtDate(selectedDate, { month: 'long', day: 'numeric', year: 'numeric' })
     }

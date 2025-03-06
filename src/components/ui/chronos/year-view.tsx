@@ -1,16 +1,15 @@
 "use client"
 
-import { useDateColors, useDayEvents, isSameDay } from "./chronos-view"
+import { useChronos, useDateColors, useDayEvents } from "./chronos"
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { CaptionProps, DayPicker, DayProps } from "react-day-picker"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
-import { useChronos } from "./chronos"
+import { cn, isSameDay } from "@/lib/utils"
 import { EventLine } from "./event-line"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
 
 export function YearView() {
   const { selectedDate, setSelectedDate } = useChronos()

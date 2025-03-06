@@ -1,16 +1,41 @@
 "use client"
 
-import { useState, useCallback, useRef, RefObject, MouseEvent as ReactMouseEvent } from "react"
-import { DateHeader, useDayEvents, timeAscending } from "./chronos-view"
-import { useChronos, ChronosEvent } from "./chronos"
+import { useState, useCallback, useRef, RefObject, useMemo, MouseEvent as ReactMouseEvent } from "react"
+import { useChronos, ChronosEvent, useDayEvents } from "./chronos"
+import { cn, timeAscending } from "@/lib/utils"
 import { useDayDrag } from "@/hooks/use-day-drag"
+import { DateHeader } from "./month-view"
 import { EventCard } from "./event-card"
 import { Card } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
 
 export const PX_PER_HOUR = 75
 
-export function DaysView({ dates, className }: { dates: Date[], className?: string }) {
+export function DayView() {
+  const { selectedDate } = useChronos()
+
+  return <DaysView dates={[selectedDate]} className="grid-cols-[auto_1fr]" />
+}
+
+export function WeekView() {
+  const { selectedDate } = useChronos()
+
+  const weekDates = useMemo(() => {
+    const dates = []
+    const firstDayOfWeek = new Date(selectedDate)
+    firstDayOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay())
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(firstDayOfWeek)
+      date.setDate(firstDayOfWeek.getDate() + i)
+      dates.push(date)
+    }
+    return dates
+  }, [selectedDate])
+
+  return <DaysView dates={weekDates} className="grid-cols-[auto_repeat(7,_1fr)]" />
+}
+
+function DaysView({ dates, className }: { dates: Date[], className?: string }) {
   return (
     <Card className={cn("flex-1 p-0 grid grid-rows-[auto_1fr] gap-0 isolate overflow-y-auto overflow-x-hidden transition-colors", className)}>
       <div className="row-start-1 col-start-1" />

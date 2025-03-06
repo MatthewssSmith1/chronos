@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect, useMemo, useContext, useCallback, createContext, ReactNode } from "react"
+import { useState, useEffect, useMemo, useContext, useCallback, createContext, ReactNode, CSSProperties } from "react"
+import { DayView, WeekView } from "./days-view"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { CSSProperties } from "react"
-import ChronosControls from "./chronos-controls"
-import { ChronosView } from "./chronos-view"
-import { cn } from "@/lib/utils"
+import { ChronosControls } from "./chronos-controls"
+import { cn, isSameDay } from "@/lib/utils"
+import { MonthView } from "./month-view"
+import { YearView } from "./year-view"
 
 export type ChronosCategory = {
   id: string
@@ -24,7 +25,7 @@ export type ChronosEvent = {
   categoryId?: string
 }
 
-export const VIEWS = ["day", "week", "month", "year", "list"] as const
+export const VIEWS = ["day", "week", "month", "year"] as const
 export type ViewType = typeof VIEWS[number]
 
 type ChronosContextType = {
@@ -133,7 +134,6 @@ export function ChronosProvider({
 
       switch (viewType) {
         case "day":
-        case "list":
           newDate.setDate(currentDate.getDate() + direction)
           break
         case "week":
@@ -206,17 +206,47 @@ export function ChronosProvider({
   )
 }
 
+export function Chronos({ className }: { className?: string }) {
+  const { viewType } = useChronos()
+
+  const View = {
+    day: DayView,
+    week: WeekView,
+    month: MonthView,
+    year: YearView,
+  }[viewType]
+
+  return (
+    <div className={cn("w-full h-full flex flex-col gap-4 p-4", className)}>
+      <ChronosControls />
+      <View />
+    </div>
+  )
+}
+
 export function useChronos() {
   const context = useContext(ChronosContext)
   if (context === undefined) throw new Error("useChronos must be used within a ChronosProvider")
   return context
 }
 
-export function Chronos({ className }: { className?: string }) {
-  return (
-    <div className={cn("w-full h-full flex flex-col gap-4 p-4", className)}>
-      <ChronosControls />
-      <ChronosView />
-    </div>
-  )
+export function useDayEvents(date: Date, previewEvent: ChronosEvent | null = null) {
+  let { events } = useChronos()
+
+  return useMemo(() => {
+    if (previewEvent) events = [...events, previewEvent]
+
+    return events
+      .filter(event => isSameDay(event.start, date))
+      .sort((a, b) => a.start.getTime() - b.start.getTime())
+  }, [events, date, previewEvent])
+}
+
+export function useDateColors(date: Date) {
+  const { selectedDate } = useChronos()
+
+  if (isSameDay(date, selectedDate)) return "bg-primary/80 hover:bg-primary/90 !text-primary-foreground"
+  else if (isSameDay(date, new Date())) return "bg-primary/20 hover:bg-primary/30"
+
+  return ""
 }

@@ -1,15 +1,14 @@
 "use client"
 
-import { DateHeader, useDayEvents, isSameDay } from "./chronos-view"
-import { useChronos, ChronosEvent } from "./chronos"
+import { useChronos, ChronosEvent, useDayEvents, useDateColors } from "./chronos"
+import { useMemo, useState, ReactNode } from "react"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
-import { useMemo, useState } from "react"
+import { cn, isSameDay } from "@/lib/utils"
 import { EventForm } from "./event-form"
 import { EventLine } from "./event-line"
 import { PlusIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
 
 function useMonthDates() {
   const { selectedDate } = useChronos()
@@ -103,5 +102,49 @@ function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCoun
         </Popover>
       </div>
     </div>
+  )
+}
+
+export function DateHeader({ date, hideWeekday = false, className }: { date: Date, hideWeekday?: boolean, className?: string }) {
+  const { setViewType, setSelectedDate } = useChronos()
+
+  function onClick() {
+    setSelectedDate(date)
+    setViewType("day")
+  }
+
+  const Text = ({ className, children }: { className?: string, children?: ReactNode | ReactNode[] }) =>
+    <p className={cn("mx-auto text-xs sm:text-sm font-medium transition-colors pointer-events-none", className)}>{children}</p>
+
+  function WeekdayText() {
+    const text = date.toLocaleDateString('en-US', { weekday: 'short' })
+    const firstLetter = text.charAt(0)
+    const rest = text.slice(1)
+
+    return <Text className="text-muted-foreground">{firstLetter}<span className="hidden sm:inline">{rest}</span></Text>
+  }
+
+  function DateText() {
+    const colors = useDateColors(date)
+
+    return (
+      <div className={cn(
+        "size-6 sm:size-7 mx-auto flex items-center justify-center rounded-full transition-colors pointer-events-none",
+        colors
+      )}>
+        <Text className={cn(
+          "text-inherit"
+        )}>
+          {date.getDate()}
+        </Text>
+      </div>
+    )
+  }
+
+  return (
+    <button onClick={onClick} className={cn("flex flex-col cursor-pointer hover:bg-muted/80 active:bg-muted transition-colors", className)}>
+      {!hideWeekday && <WeekdayText />}
+      <DateText />
+    </button>
   )
 }
