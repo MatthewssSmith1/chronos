@@ -149,7 +149,7 @@ function NewEventButton() {
       <EventForm 
         align="end" 
         alignOffset={-8} 
-        onCreateEvent={event => {
+        onSubmitEvent={event => {
           createEvent(event)
           setIsOpen(false)
         }}

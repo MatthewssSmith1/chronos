@@ -91,7 +91,7 @@ function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCoun
             </Button>
           </PopoverTrigger>
           <EventForm 
-            onCreateEvent={(data) => {
+            onSubmitEvent={(data) => {
               createEvent(data)
               setPreviewEvent(null)
             }} 

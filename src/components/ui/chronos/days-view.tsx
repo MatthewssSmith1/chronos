@@ -1,13 +1,10 @@
 "use client"
 
-import { useState, useCallback, useRef, RefObject, useMemo, MouseEvent as ReactMouseEvent, useEffect } from "react"
+import { useState, useCallback, useRef, RefObject, MouseEvent as ReactMouseEvent } from "react"
 import { DateHeader, useDayEvents, timeAscending } from "./chronos-view"
 import { useChronos, ChronosEvent } from "./chronos"
-import { Popover, PopoverTrigger } from "@/components/ui/popover"
-import * as PopoverPrimitive from "@radix-ui/react-popover"
 import { useDayDrag } from "@/hooks/use-day-drag"
 import { EventCard } from "./event-card"
-import { EventForm } from "./event-form"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
@@ -21,9 +18,7 @@ export function DaysView({ dates, className }: { dates: Date[], className?: stri
         <DateHeader key={idx} date={date} className="sticky top-0 z-50 py-2 bg-background/80 border-b" />
       ))}
       <TimeColumn />
-      {dates.map((date, idx) => (
-        <DayColumn date={date} key={idx} numDays={dates.length} />
-      ))}
+      {dates.map((date, idx) => <DayColumn date={date} key={idx} />)}
     </Card>
   )
 }
@@ -70,71 +65,43 @@ function useCreateEventGestures(columnRef: RefObject<HTMLDivElement | null>, dat
     })
   }, [startDrag])
   
-  const anchorStyle = useMemo(() => {
-    if (!previewEvent) return {}
-    
-    const startHours = previewEvent.start.getHours() + (previewEvent.start.getMinutes() / 60)
-    const endHours = previewEvent.end.getHours() + (previewEvent.end.getMinutes() / 60)
-    const eventCenter = startHours + ((endHours - startHours) / 2)
-    
-    return {
-      top: `${PX_PER_HOUR * eventCenter}px`
-    }
-  }, [previewEvent])
-  
   return {
     isDragging,
     onMouseDown,
-    anchorStyle,
     previewEvent,
     setPreviewEvent,
   }
 }
 
-function DayColumn({ date, numDays }: { date: Date, numDays: number }) {
+function DayColumn({ date }: { date: Date }) {
   const columnRef = useRef<HTMLDivElement>(null)
   const dayEvents = useDayEvents(date)
 
-  const { createEvent, updateEvent } = useChronos()
-  const { isDragging, onMouseDown, anchorStyle, previewEvent, setPreviewEvent } = useCreateEventGestures(columnRef, date)
-
-  const index = date.getDay()
-  const isLast = index === 6
-  const firstHalf = index < numDays / 2
+  const { updateEvent } = useChronos()
+  const { isDragging, onMouseDown, previewEvent, setPreviewEvent } = useCreateEventGestures(columnRef, date)
 
   return (
     <div
       ref={columnRef}
       onMouseDown={onMouseDown}
-      className={cn("flex-1 flex flex-col h-full relative select-none", isLast ? "rounded-br-md" : "border-r")}
+      className={cn(
+        "flex-1 flex flex-col h-full relative select-none", 
+        date.getDay() === 6 ? "rounded-br-md" : "border-r"
+      )}
     >
       {dayEvents.map(event => (
         <EventCard key={event.id} event={event} columnRef={columnRef} onEventChanged={updateEvent} />
       ))}
 
       {previewEvent && (
-        <Popover open={!isDragging} onOpenChange={(open) => !open && setPreviewEvent(null)}>
-          <PopoverTrigger>
-            <EventCard 
-              isPreview 
-              event={previewEvent} 
-              columnRef={columnRef}
-              isDragging={isDragging}
-              onEventChanged={setPreviewEvent} 
-            />
-          </PopoverTrigger>
-          <PopoverPrimitive.Anchor className="absolute left-0 right-0" style={anchorStyle} />
-          <EventForm 
-            align="center" 
-            side={firstHalf ? "right" : "left"} 
-            event={previewEvent} 
-            onEventChanged={setPreviewEvent}
-            onCreateEvent={event => {
-              setPreviewEvent(null)
-              createEvent(event)
-            }} 
-          />
-        </Popover>
+        <EventCard 
+          event={previewEvent} 
+          columnRef={columnRef}
+          onEventChanged={setPreviewEvent}
+          isNew
+          isDragging={isDragging}
+          onStopCreating={() => setPreviewEvent(null)} 
+        />
       )}
     </div>
   )

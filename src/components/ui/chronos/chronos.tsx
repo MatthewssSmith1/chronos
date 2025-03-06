@@ -36,9 +36,6 @@ type ChronosContextType = {
   setSelectedDate: (date: Date) => void
   offsetPeriod: (direction: number) => void
   goToToday: () => void
-  onCreateEvent?: (event: ChronosEvent) => void | Promise<void | ChronosEvent>
-  onEditEvent?: (event: ChronosEvent) => void | Promise<void | ChronosEvent>
-  onDeleteEvent?: (eventId: string) => void | Promise<void>
   createEvent: (event: Omit<ChronosEvent, "id">) => Promise<void>
   updateEvent: (event: ChronosEvent) => Promise<void>
   deleteEvent: (eventId: string) => Promise<void>
@@ -183,9 +180,6 @@ export function ChronosProvider({
       setSelectedDate,
       offsetPeriod,
       goToToday,
-      onCreateEvent,
-      onEditEvent,
-      onDeleteEvent,
       createEvent,
       updateEvent,
       deleteEvent,
@@ -198,9 +192,6 @@ export function ChronosProvider({
       selectedDate, 
       offsetPeriod, 
       goToToday, 
-      onCreateEvent, 
-      onEditEvent, 
-      onDeleteEvent,
       createEvent,
       updateEvent,
       deleteEvent,

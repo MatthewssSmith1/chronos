@@ -25,15 +25,15 @@ const EventSchema = z.object({
   location: z.string().optional(),
   description: z.string().optional(),
   categoryId: z.string(),
-  allDay: z.boolean(),
+  allDay: z.boolean().default(false),
   start: z.date(),
   end: z.date(),
 })
 type EventType = z.infer<typeof EventSchema>
 
 type FormProps = ComponentProps<typeof PopoverPrimitive.Content> & {
-  onCreateEvent: (data: EventType) => void,
   onEventChanged?: (event: ChronosEvent) => void,
+  onSubmitEvent: (data: EventType) => void,
   event?: ChronosEvent,
   editMode?: boolean
 }
@@ -50,7 +50,7 @@ function defaultEvent(categories: ChronosCategory[]) {
   }
 }
 
-export function EventForm({ onCreateEvent, onEventChanged, event, className, editMode = false, ...props }: FormProps) {
+export function EventForm({ onSubmitEvent, onEventChanged, event, className, editMode = false, ...props }: FormProps) {
   const { categories } = useChronos()
 
   const form = useForm<EventType>({
@@ -76,12 +76,12 @@ export function EventForm({ onCreateEvent, onEventChanged, event, className, edi
           onKeyDown={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()} 
           onClick={(e) => e.stopPropagation()}
-          onSubmit={form.handleSubmit(onCreateEvent)}
+          onSubmit={form.handleSubmit(onSubmitEvent)}
         >
           <h2 className="text-xl font-bold mb-4">{editMode ? "Edit event" : "Create event"}</h2>
 
           <PopoverPrimitive.Close asChild>
-            <Button size="sm" variant="ghost" type="button" className="absolute top-4 right-4">
+            <Button size="sm" variant="ghost" type="button" className="absolute top-4 right-4 size-8">
               <XIcon className="size-4" />
             </Button>
           </PopoverPrimitive.Close>
