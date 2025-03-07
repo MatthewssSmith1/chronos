@@ -236,9 +236,11 @@ export function useDayEvents(date: Date, previewEvent: ChronosEvent | null = nul
   return useMemo(() => {
     if (previewEvent) events = [...events, previewEvent]
 
-    return events
+    events = events
       .filter(event => isSameDay(event.start, date))
       .sort((a, b) => a.start.getTime() - b.start.getTime())
+
+    return events
   }, [events, date, previewEvent])
 }
 

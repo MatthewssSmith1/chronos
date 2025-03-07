@@ -160,6 +160,7 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
         onSubmitEvent={isNew 
           ? () => {createEvent(event); onStopCreating?.()}
           : () => {updateEvent(event); setIsEditing(false)}}
+        onDeleteEvent={deleteEvent}
       />
     </Popover>
   )

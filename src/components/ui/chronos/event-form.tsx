@@ -34,6 +34,7 @@ type EventType = z.infer<typeof EventSchema>
 type FormProps = ComponentProps<typeof PopoverPrimitive.Content> & {
   onEventChanged?: (event: ChronosEvent) => void,
   onSubmitEvent: (data: EventType) => void,
+  onDeleteEvent?: (id: string) => void,
   event?: ChronosEvent,
   editMode?: boolean
 }
@@ -50,7 +51,7 @@ function defaultEvent(categories: ChronosCategory[]) {
   }
 }
 
-export function EventForm({ onSubmitEvent, onEventChanged, event, className, editMode = false, ...props }: FormProps) {
+export function EventForm({ onSubmitEvent, onEventChanged, onDeleteEvent, event, className, editMode = false, ...props }: FormProps) {
   const { categories } = useChronos()
 
   const form = useForm<EventType>({
@@ -153,6 +154,14 @@ export function EventForm({ onSubmitEvent, onEventChanged, event, className, edi
             <PopoverPrimitive.Close asChild>
               <Button type="button" variant="outline">Cancel</Button>
             </PopoverPrimitive.Close>
+            {editMode && <Button 
+              type="button" 
+              variant="destructive" 
+              onClick={() => {
+                if (event?.id) onDeleteEvent?.(event.id)
+              }}>
+              Delete
+            </Button>}
             <Button type="submit">{editMode ? "Update" : "Create"}</Button>
           </div>
         </form>
