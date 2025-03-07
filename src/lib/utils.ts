@@ -21,3 +21,7 @@ export function formatTimeRange(start: Date, end: Date) {
 
   return `${formatTime(start, showStartPeriod)} - ${formatTime(end)}`;
 }
+
+export const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString()
+
+export const timeAscending = (a: Date, b: Date) => a.getTime() - b.getTime()

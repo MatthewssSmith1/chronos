@@ -9,13 +9,15 @@ export const Route = createFileRoute('/')({
 function HomeComponent() {
     // placeholder for API calls, simulating a delay
   const handleCreateEvent = async (event: ChronosEvent): Promise<ChronosEvent> => {
+    console.log("Create event:", event);
+
     await new Promise(resolve => setTimeout(resolve, 500));
     
     return { ...event, id: `server-${Date.now()}` };
   };
 
   const handleEditEvent = async (event: ChronosEvent): Promise<ChronosEvent> => {
-    console.log("Editing event:", event);
+    console.log("Edit event:", event);
 
     await new Promise(resolve => setTimeout(resolve, 500));
     
@@ -23,6 +25,8 @@ function HomeComponent() {
   };
 
   const handleDeleteEvent = async (eventId: string): Promise<void> => {
+    console.log("Delete event:", eventId);
+
     await new Promise(resolve => setTimeout(resolve, 500));
   };
 
