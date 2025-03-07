@@ -25,12 +25,12 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
   const [event, setEvent] = useState(initialEvent)
   const [isEditing, setIsEditing] = useState(false)
 
-  const { colorOfEvent, updateEvent, createEvent, deleteEvent } = useChronos()
+  const { viewType, colorOfEvent, updateEvent, createEvent, deleteEvent } = useChronos()
 
   useEffect(() => setEvent(initialEvent), [initialEvent])
 
   // TODO: better name disambiguation that `isDraggingSelf`
-  const { startDrag, isDragging: isDraggingSelf, wasDragging: wasDraggingSelf } = useDayDrag(columnRef, event.start)
+  const { startDrag, dayOffset, isDragging: isDraggingSelf, wasDragging: wasDraggingSelf } = useDayDrag(columnRef, event.start)
 
   const startHours = event.start.getHours() + (event.start.getMinutes() / 60)
   const endHours = event.end.getHours() + (event.end.getMinutes() / 60)
@@ -101,19 +101,27 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
 
         setEvent({ ...event, start: newStart, end: newEnd })
       },
-      onDragEnd: ({ startTime, endTime }) => {
+      onDragEnd: ({ startTime, endTime, dayOffset }) => {
         const timeDiff = clamp(endTime.getTime() - startTime.getTime())
 
-        if (timeDiff === 0) return
+        if (timeDiff === 0 && dayOffset === 0) return
+        
+        const newStart = new Date(event.start.getTime() + timeDiff)
+        const newEnd = new Date(event.end.getTime() + timeDiff)
+        
+        if (dayOffset !== 0 && viewType === 'week') {
+          newStart.setDate(newStart.getDate() + dayOffset)
+          newEnd.setDate(newEnd.getDate() + dayOffset)
+        }
         
         onEventChanged({ 
           ...event, 
-          start: new Date(event.start.getTime() + timeDiff),
-          end: new Date(event.end.getTime() + timeDiff)
+          start: newStart,
+          end: newEnd
         })
       }
     })
-  }, [startDrag, event, onEventChanged])
+  }, [startDrag, event, onEventChanged, viewType])
 
   const positionStyle: CSSProperties = useMemo(() => {
     const top = `${startHours * PX_PER_HOUR + EVENT_PADDING}px`;
@@ -133,9 +141,12 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
       const rightPercent = (1 - (idx + 1) * columnWidth) * 100;
       right = `calc(${rightPercent}% + ${EVENT_PADDING / (isLastCol ? 1 : 2)}px)`;
     }
+
+    const colWidth = columnRef.current?.getBoundingClientRect().width || 0
+    const transform = viewType === 'week' ? `translateX(${dayOffset * colWidth}px)` : ''
     
-    return { top, height, left, right };
-  }, [startHours, duration, event]);
+    return { top, height, left, right, transform };
+  }, [startHours, duration, event, dayOffset, viewType, columnRef]);
 
   return (
     <Popover 
@@ -154,9 +165,9 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
           onClick={(e) => wasDraggingSelf && e.preventDefault()}
           style={{ ...colorOfEvent(event), ...positionStyle }}
           className={cn(
-            "event-card absolute rounded-md px-1.5 py-1 overflow-hidden cursor-pointer select-none transition-[filter,box-shadow] hover:brightness-110 hover:shadow-sm ", 
-            isNew ? "new-event hover:brightness-100 shadow-sm" : "[&:has(~:is(.new-event,.dragging))]:pointer-events-none [.dragging~&]:pointer-events-none",
-            (isDragging || isDraggingSelf) ? "dragging pointer-events-none z-50" : "z-40"
+            "event-card absolute rounded-md px-1.5 py-1 overflow-hidden cursor-pointer select-none transition-[filter,box-shadow,opacity] hover:brightness-110 hover:shadow-sm ", 
+            isNew && "new-event hover:brightness-100 shadow-sm",
+            (isDragging || isDraggingSelf) ? "dragging pointer-events-none z-50 opacity-90 shadow-lg" : "z-40"
           )}
         >
           <p className="text-left text-sm text-white truncate pointer-events-none font-medium">{event.title?.length ? event.title : "(No title)"}</p>

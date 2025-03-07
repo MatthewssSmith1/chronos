@@ -5,6 +5,7 @@ const TIME_SNAP_MINUTES = 15
 export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Date) {
   const [isDragging, setIsDragging] = useState(false)
   const [wasDragging, setWasDragging] = useState(false)
+  const [dayOffset, setDayOffset] = useState(0)
   
   const getTimeFromY = useCallback((y: number) => {
     if (!columnRef.current) return new Date(date)
@@ -17,11 +18,25 @@ export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Da
     return newTime
   }, [date, columnRef])
   
+  const getDayOffsetFromX = useCallback((currentX: number) => {
+    if (!columnRef.current) return 0
+    
+    const { left, width } = columnRef.current.getBoundingClientRect()
+    if (width === 0) return 0
+    
+    const columnCenter = left + (width / 2) 
+    const centerOffset = Math.round((currentX - columnCenter) / width)
+
+    const targetWeekday = Math.max(0, Math.min(6, date.getDay() + centerOffset))
+
+    return targetWeekday - date.getDay()
+  }, [columnRef, date])
+  
   const startDrag = useCallback((
     event: ReactMouseEvent, 
     options?: {
       onDragMove?: (data: { startTime: Date, currentTime: Date }) => void
-      onDragEnd?: (data: { startTime: Date, endTime: Date }) => void
+      onDragEnd?: (data: { startTime: Date, endTime: Date, dayOffset: number }) => void
     }
   ) => {
     event.preventDefault()
@@ -33,19 +48,21 @@ export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Da
     
     const onMouseMove = (e: MouseEvent) => {
       e.preventDefault()
-
+      
       options?.onDragMove?.({ 
         startTime, 
-        currentTime: getTimeFromY(e.clientY)
+        currentTime: getTimeFromY(e.clientY),
       })
 
+      setDayOffset(getDayOffsetFromX(e.clientX))
       setWasDragging(true)
     }
     
     const onMouseUp = (e: MouseEvent) => {
       options?.onDragEnd?.({ 
         startTime, 
-        endTime: getTimeFromY(e.clientY)
+        endTime: getTimeFromY(e.clientY),
+        dayOffset: getDayOffsetFromX(e.clientX)
       })
       
       window.removeEventListener('mousemove', onMouseMove)
@@ -53,6 +70,7 @@ export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Da
       document.body.style.userSelect = ''
       document.body.style.cursor = ''
       
+      setDayOffset(0)
       setIsDragging(false)
       setTimeout(() => setWasDragging(false), 100)
     }
@@ -60,7 +78,7 @@ export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Da
     window.addEventListener('mousemove', onMouseMove)
     window.addEventListener('mouseup', onMouseUp)
     document.body.style.userSelect = 'none'
-    document.body.style.cursor = 'ns-resize'
+    document.body.style.cursor = 'move'
     
     return () => {
       window.removeEventListener('mousemove', onMouseMove)
@@ -68,7 +86,7 @@ export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Da
       document.body.style.userSelect = ''
       document.body.style.cursor = ''
     }
-  }, [getTimeFromY])
+  }, [getTimeFromY, getDayOffsetFromX])
   
-  return { startDrag, isDragging, wasDragging }
+  return { startDrag, dayOffset, isDragging, wasDragging }
 }

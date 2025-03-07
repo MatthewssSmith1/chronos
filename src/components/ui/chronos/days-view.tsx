@@ -37,7 +37,11 @@ export function WeekView() {
 
 function DaysView({ dates, className }: { dates: Date[], className?: string }) {
   return (
-    <Card className={cn("flex-1 p-0 grid grid-rows-[auto_1fr] gap-0 isolate overflow-y-auto overflow-x-hidden transition-colors", className)}>
+    <Card className={cn(
+      "relative flex-1 p-0 grid grid-rows-[auto_1fr] gap-0 isolate overflow-y-auto overflow-x-hidden transition-colors", 
+      "[&:has(.new-event,.dragging)_.event-card]:pointer-events-none",
+      className
+    )}>
       <div className="row-start-1 col-start-1" />
       {dates.map((date, idx) => (
         <DateHeader key={idx} date={date} className="sticky top-0 z-50 py-2 bg-background/80 border-b" />
