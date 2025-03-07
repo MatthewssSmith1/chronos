@@ -82,7 +82,7 @@ function ViewSelect() {
       setOpen(false)
       onClick()
     }
-    return <Button onClick={handleClick} variant="ghost" size="sm" className="px-1 text-left">{children}</Button>
+    return <Button onClick={handleClick} variant="ghost" size="sm" className="px-1 font-normal text-left">{children}</Button>
   }
 
   const openEventForm = () => 

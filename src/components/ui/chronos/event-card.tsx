@@ -123,15 +123,15 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
     let right = `${EVENT_PADDING}px`;
 
     if (event.numColumns > 1) {
+      const idx = event.columnIndex
       const columnWidth = 1 / event.numColumns;
+      const [isFirstCol, isLastCol] = [idx === 0, idx === event.numColumns - 1]
 
-      const isFirstColumn = event.columnIndex === 0;
-      const leftPercent = event.columnIndex * columnWidth * 100;
-      left = `calc(${leftPercent}% + ${EVENT_PADDING / (isFirstColumn ? 1 : 2)}px)`;
+      const leftPercent = idx * columnWidth * 100;
+      left = `calc(${leftPercent}% + ${EVENT_PADDING / (isFirstCol ? 1 : 2)}px)`;
       
-      const isLastColumn = event.columnIndex === event.numColumns - 1;
-      const rightPercent = (1 - (event.columnIndex + 1) * columnWidth) * 100;
-      right = `calc(${rightPercent}% + ${EVENT_PADDING / (isLastColumn ? 1 : 2)}px)`;
+      const rightPercent = (1 - (idx + 1) * columnWidth) * 100;
+      right = `calc(${rightPercent}% + ${EVENT_PADDING / (isLastCol ? 1 : 2)}px)`;
     }
     
     return { top, height, left, right };
@@ -154,9 +154,9 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
           onClick={(e) => wasDraggingSelf && e.preventDefault()}
           style={{ ...colorOfEvent(event), ...positionStyle }}
           className={cn(
-            "event-card absolute z-40 rounded-md px-1.5 py-1 overflow-hidden cursor-pointer select-none transition-[filter,box-shadow] hover:brightness-110 hover:shadow-sm ", 
+            "event-card absolute rounded-md px-1.5 py-1 overflow-hidden cursor-pointer select-none transition-[filter,box-shadow] hover:brightness-110 hover:shadow-sm ", 
             isNew ? "new-event hover:brightness-100 shadow-sm" : "[&:has(~:is(.new-event,.dragging))]:pointer-events-none [.dragging~&]:pointer-events-none",
-            isDragging && "dragging pointer-events-none"
+            (isDragging || isDraggingSelf) ? "dragging pointer-events-none z-50" : "z-40"
           )}
         >
           <p className="text-left text-sm text-white truncate pointer-events-none font-medium">{event.title?.length ? event.title : "(No title)"}</p>

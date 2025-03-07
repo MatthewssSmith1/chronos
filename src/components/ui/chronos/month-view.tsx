@@ -106,11 +106,12 @@ function DayCell({ date, index, dayCount }: { date: Date, index: number, dayCoun
 }
 
 export function DateHeader({ date, hideWeekday = false, className }: { date: Date, hideWeekday?: boolean, className?: string }) {
-  const { setViewType, setSelectedDate } = useChronos()
+  const { setViewType, selectedDate, setSelectedDate } = useChronos()
 
   function onClick() {
-    setSelectedDate(date)
-    setViewType("day")
+    isSameDay(date, selectedDate) 
+      ? setViewType("day") 
+      : setSelectedDate(date)
   }
 
   const Text = ({ className, children }: { className?: string, children?: ReactNode | ReactNode[] }) =>

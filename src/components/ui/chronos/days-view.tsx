@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, RefObject, useMemo, MouseEvent as ReactMouseEvent } from "react"
 import { useChronos, ChronosEvent, useDayEvents } from "./chronos"
-import { cn, timeAscending } from "@/lib/utils"
+import { cn, isSameDay, timeAscending } from "@/lib/utils"
 import { useDayDrag } from "@/hooks/use-day-drag"
 import { DateHeader } from "./month-view"
 import { EventCard } from "./event-card"
@@ -101,16 +101,18 @@ function useCreateEventGestures(columnRef: RefObject<HTMLDivElement | null>, dat
 function DayColumn({ date }: { date: Date }) {
   const columnRef = useRef<HTMLDivElement>(null)
 
-  const { updateEvent } = useChronos()
   const { isDragging, onMouseDown, previewEvent, setPreviewEvent } = useCreateEventGestures(columnRef, date)
+  const { updateEvent, selectedDate } = useChronos()
   const dayEvents = useDayEvents(date, previewEvent)
+  const isSelected = isSameDay(date, selectedDate)
 
   return (
     <div
       ref={columnRef}
       onMouseDown={onMouseDown}
       className={cn(
-        "flex-1 flex flex-col h-full relative select-none", 
+        isSelected ? "flex col-start-2 sm:col-start-auto -col-end-1 sm:col-end-auto" : "hidden sm:flex",
+        "flex-1 flex-col h-full relative select-none", 
         date.getDay() === 6 ? "rounded-br-md" : "border-r"
       )}
     >
