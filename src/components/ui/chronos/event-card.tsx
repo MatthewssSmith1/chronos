@@ -22,10 +22,10 @@ type EventCardProps = {
 }
 
 export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNew = false, isDragging = false, onStopCreating }: EventCardProps) {
-  const [event, setEvent] = useState(initialEvent)
-  const [isEditing, setIsEditing] = useState(false)
-
   const { viewType, colorOfEvent, updateEvent, createEvent, deleteEvent } = useChronos()
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [event, setEvent] = useState(initialEvent)
 
   useEffect(() => setEvent(initialEvent), [initialEvent])
 
@@ -34,9 +34,8 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
 
   const startHours = event.start.getHours() + (event.start.getMinutes() / 60)
   const endHours = event.end.getHours() + (event.end.getMinutes() / 60)
-  const duration = endHours - startHours
+  const duration = (endHours - startHours + 24) % 24
 
-  // TODO: figure out why subtitle doesn't show when event is at end of day
   function Subtitle() {
     let text = formatTimeRange(event.start, event.end)
     if (event.location) text += ` @ ${event.location}`
@@ -104,7 +103,8 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
       onDragEnd: ({ startTime, endTime, dayOffset }) => {
         const timeDiff = clamp(endTime.getTime() - startTime.getTime())
 
-        if (timeDiff === 0 && dayOffset === 0) return
+        if (timeDiff === 0 && dayOffset === 0)
+          return setIsEditing(true)
         
         const newStart = new Date(event.start.getTime() + timeDiff)
         const newEnd = new Date(event.end.getTime() + timeDiff)
@@ -154,15 +154,12 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
       onOpenChange={open => {
         if (isNew) return onStopCreating?.()
 
-        if (open && isDraggingSelf) return
-
         setIsEditing(open)
         if(!open) setEvent(initialEvent)
       }}>
       <PopoverTrigger asChild>
         <div
           onMouseDown={onCardMouseDown}
-          onClick={(e) => wasDraggingSelf && e.preventDefault()}
           style={{ ...colorOfEvent(event), ...positionStyle }}
           className={cn(
             "event-card absolute rounded-md px-1.5 py-1 overflow-hidden cursor-pointer select-none transition-[filter,box-shadow,opacity] hover:brightness-110 hover:shadow-sm ", 
