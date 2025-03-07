@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, RefObject, useEffect, CSSProperties, useMemo, MouseEvent as ReactMouseEvent } from "react"
-import { useChronos, ChronosEvent } from "./chronos"
+import { useChronos, ChronosEvent, PositionedChronosEvent } from "./chronos"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
 import { cn, formatTimeRange } from "@/lib/utils"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
@@ -13,7 +13,7 @@ import { EventForm } from "./event-form"
 const EVENT_PADDING = 3
 
 type EventCardProps = {
-  event: ChronosEvent
+  event: PositionedChronosEvent
   columnRef: RefObject<HTMLDivElement | null>
   onEventChanged: (updatedEvent: ChronosEvent) => void
   isNew?: boolean
@@ -115,12 +115,27 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
     })
   }, [startDrag, event, onEventChanged])
 
-  const positionStyle: CSSProperties = useMemo(() => ({
-    top: `${startHours * PX_PER_HOUR + EVENT_PADDING}px`,
-    height: `${duration * PX_PER_HOUR - EVENT_PADDING * 2}px`,
-    left: `${EVENT_PADDING}px`,
-    right: `${EVENT_PADDING}px`,
-  }), [startHours, duration])
+  const positionStyle: CSSProperties = useMemo(() => {
+    const top = `${startHours * PX_PER_HOUR + EVENT_PADDING}px`;
+    const height = `${duration * PX_PER_HOUR - EVENT_PADDING * 2}px`;
+
+    let left = `${EVENT_PADDING}px`;
+    let right = `${EVENT_PADDING}px`;
+
+    if (event.numColumns > 1) {
+      const columnWidth = 1 / event.numColumns;
+
+      const isFirstColumn = event.columnIndex === 0;
+      const leftPercent = event.columnIndex * columnWidth * 100;
+      left = `calc(${leftPercent}% + ${EVENT_PADDING / (isFirstColumn ? 1 : 2)}px)`;
+      
+      const isLastColumn = event.columnIndex === event.numColumns - 1;
+      const rightPercent = (1 - (event.columnIndex + 1) * columnWidth) * 100;
+      right = `calc(${rightPercent}% + ${EVENT_PADDING / (isLastColumn ? 1 : 2)}px)`;
+    }
+    
+    return { top, height, left, right };
+  }, [startHours, duration, event]);
 
   return (
     <Popover 
@@ -156,7 +171,7 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
         side="left"
         event={event} 
         editMode={!isNew}
-        onEventChanged={isNew ? onEventChanged : setEvent}
+        onEventChanged={evt => isNew ? onEventChanged(evt) : setEvent({ ...event, ...evt})}
         onSubmitEvent={isNew 
           ? () => {createEvent(event); onStopCreating?.()}
           : () => {updateEvent(event); setIsEditing(false)}}

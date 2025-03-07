@@ -25,6 +25,8 @@ export type ChronosEvent = {
   categoryId?: string
 }
 
+export type PositionedChronosEvent = ChronosEvent & { columnIndex: number, numColumns: number }
+
 export const VIEWS = ["day", "week", "month", "year"] as const
 export type ViewType = typeof VIEWS[number]
 
@@ -230,20 +232,6 @@ export function useChronos() {
   return context
 }
 
-export function useDayEvents(date: Date, previewEvent: ChronosEvent | null = null) {
-  let { events } = useChronos()
-
-  return useMemo(() => {
-    if (previewEvent) events = [...events, previewEvent]
-
-    events = events
-      .filter(event => isSameDay(event.start, date))
-      .sort((a, b) => a.start.getTime() - b.start.getTime())
-
-    return events
-  }, [events, date, previewEvent])
-}
-
 export function useDateColors(date: Date) {
   const { selectedDate } = useChronos()
 
@@ -251,4 +239,108 @@ export function useDateColors(date: Date) {
   else if (isSameDay(date, new Date())) return "bg-primary/20 hover:bg-primary/30"
 
   return ""
+}
+
+export function useDayEvents(date: Date, previewEvent: ChronosEvent | null = null) {
+  const { events: allEvents } = useChronos()
+
+  return useMemo(() => {
+    let events = [...allEvents]
+    if (previewEvent) events.push(previewEvent)
+
+    return calculateEventLayout(events.filter(event => isSameDay(event.start, date)))
+  }, [allEvents, date, previewEvent])
+}
+
+const eventsOverlap = (a: ChronosEvent, b: ChronosEvent) => a.start < b.end && b.start < a.end
+
+function calculateEventLayout(events: ChronosEvent[]): PositionedChronosEvent[] {
+  if (events.length === 0) return [];
+
+  const positionedEvents: PositionedChronosEvent[] = events.map(event => ({
+    ...event,
+    columnIndex: 0,
+    numColumns: 1
+  }));
+
+  // Find all events that overlap with each event
+  const eventOverlaps = new Map<PositionedChronosEvent, Set<PositionedChronosEvent>>();
+  
+  positionedEvents.forEach(event => {
+    const overlaps = new Set<PositionedChronosEvent>();
+    
+    positionedEvents.forEach(otherEvent => {
+      if (otherEvent !== event && eventsOverlap(event, otherEvent)) {
+        overlaps.add(otherEvent);
+      }
+    });
+    
+    eventOverlaps.set(event, overlaps);
+  });
+  
+  // Find connected components (groups of events that overlap directly or indirectly)
+  const visited = new Set<PositionedChronosEvent>();
+  const eventGroups: PositionedChronosEvent[][] = [];
+  
+  function dfs(event: PositionedChronosEvent, currentGroup: PositionedChronosEvent[]) {
+    if (visited.has(event)) return;
+    
+    visited.add(event);
+    currentGroup.push(event);
+    
+    const overlaps = eventOverlaps.get(event) || new Set<PositionedChronosEvent>();
+    overlaps.forEach(overlap => {
+      dfs(overlap, currentGroup);
+    });
+  }
+  
+  positionedEvents.forEach(event => {
+    if (visited.has(event)) return
+    
+    const currentGroup: PositionedChronosEvent[] = [];
+    dfs(event, currentGroup);
+    eventGroups.push(currentGroup);
+  });
+  
+  // Assign columns for each group
+  eventGroups.forEach(group => {
+    group.sort((a, b) => a.start.getTime() - b.start.getTime());
+    
+    const columns: PositionedChronosEvent[][] = [];
+    
+    group.forEach(event => {
+      // Find first column where the event doesn't overlap with any existing event
+      let columnIndex = 0;
+      let placed = false;
+      
+      while (!placed) {
+        if (!columns[columnIndex]) {
+          columns[columnIndex] = [event];
+          event.columnIndex = columnIndex;
+          placed = true;
+        } else {
+          const overlapsWithColumn = columns[columnIndex].some(
+            columnEvent => eventsOverlap(event, columnEvent)
+          );
+          
+          if (!overlapsWithColumn) {
+            columns[columnIndex].push(event);
+            event.columnIndex = columnIndex;
+            placed = true;
+          } else {
+            columnIndex++;
+          }
+        }
+      }
+    });
+    
+    const maxColumn = Math.max(...group.map(event => event.columnIndex));
+    const totalColumns = maxColumn + 1;
+    
+    group.forEach(event => {
+      event.numColumns = totalColumns;
+    });
+  });
+  
+  return positionedEvents;
 }

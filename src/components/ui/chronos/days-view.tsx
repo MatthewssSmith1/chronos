@@ -100,10 +100,10 @@ function useCreateEventGestures(columnRef: RefObject<HTMLDivElement | null>, dat
 
 function DayColumn({ date }: { date: Date }) {
   const columnRef = useRef<HTMLDivElement>(null)
-  const dayEvents = useDayEvents(date)
 
   const { updateEvent } = useChronos()
   const { isDragging, onMouseDown, previewEvent, setPreviewEvent } = useCreateEventGestures(columnRef, date)
+  const dayEvents = useDayEvents(date, previewEvent)
 
   return (
     <div
@@ -114,20 +114,10 @@ function DayColumn({ date }: { date: Date }) {
         date.getDay() === 6 ? "rounded-br-md" : "border-r"
       )}
     >
-      {dayEvents.map(event => (
-        <EventCard key={event.id} event={event} columnRef={columnRef} onEventChanged={updateEvent} />
+      {dayEvents.map(event => (event.id === 'preview' 
+        ? <EventCard key={event.id} event={event} columnRef={columnRef} onEventChanged={setPreviewEvent} isNew isDragging={isDragging} onStopCreating={() => setPreviewEvent(null)} />
+        : <EventCard key={event.id} event={event} columnRef={columnRef} onEventChanged={updateEvent} />
       ))}
-
-      {previewEvent && (
-        <EventCard 
-          event={previewEvent} 
-          columnRef={columnRef}
-          onEventChanged={setPreviewEvent}
-          isNew
-          isDragging={isDragging}
-          onStopCreating={() => setPreviewEvent(null)} 
-        />
-      )}
     </div>
   )
 }
