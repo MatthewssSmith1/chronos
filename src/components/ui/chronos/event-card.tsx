@@ -30,7 +30,7 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
   useEffect(() => setEvent(initialEvent), [initialEvent])
 
   // TODO: better name disambiguation that `isDraggingSelf`
-  const { startDrag, isDragging: isDraggingSelf } = useDayDrag(columnRef, event.start)
+  const { startDrag, isDragging: isDraggingSelf, wasDragging: wasDraggingSelf } = useDayDrag(columnRef, event.start)
 
   const startHours = event.start.getHours() + (event.start.getMinutes() / 60)
   const endHours = event.end.getHours() + (event.end.getMinutes() / 60)
@@ -136,7 +136,7 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
       <PopoverTrigger asChild>
         <div
           onMouseDown={onCardMouseDown}
-          onClick={(e) => {e.stopPropagation(); setIsEditing(true)}}
+          onClick={(e) => wasDraggingSelf && e.preventDefault()}
           style={{ ...colorOfEvent(event), ...positionStyle }}
           className={cn(
             "event-card absolute z-40 rounded-md px-1.5 py-1 overflow-hidden cursor-pointer select-none transition-[filter,box-shadow] hover:brightness-110 hover:shadow-sm ", 

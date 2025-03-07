@@ -2,15 +2,9 @@ import { useState, useCallback, RefObject, MouseEvent as ReactMouseEvent } from 
 
 const TIME_SNAP_MINUTES = 15 
 
-/**
- * A generic hook for handling drag operations in day view components.
- * This hook is agnostic to how the drag data is used - it simply tracks coordinates
- * and provides time conversion helpers.
- */
 export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Date) {
   const [isDragging, setIsDragging] = useState(false)
-  const [dragStartY, setDragStartY] = useState<number | null>(null)
-  const [currentY, setCurrentY] = useState<number | null>(null)
+  const [wasDragging, setWasDragging] = useState(false)
   
   const getTimeFromY = useCallback((y: number) => {
     if (!columnRef.current) return new Date(date)
@@ -24,47 +18,34 @@ export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Da
   }, [date, columnRef])
   
   const startDrag = useCallback((
-    e: ReactMouseEvent, 
+    event: ReactMouseEvent, 
     options?: {
-      onDragMove?: (data: { startTime: Date, currentTime: Date, startY: number, currentY: number }) => void
-      onDragEnd?: (data: { startTime: Date, endTime: Date, startY: number, endY: number }) => void
+      onDragMove?: (data: { startTime: Date, currentTime: Date }) => void
+      onDragEnd?: (data: { startTime: Date, endTime: Date }) => void
     }
   ) => {
-    e.preventDefault()
-    e.stopPropagation()
+    event.preventDefault()
+    event.stopPropagation()
     
-    const startY = e.clientY
-    setDragStartY(startY)
-    setCurrentY(startY)
     setIsDragging(true)
     
-    const startTime = getTimeFromY(startY)
+    const startTime = getTimeFromY(event.clientY)
     
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      moveEvent.preventDefault()
-      
-      const newY = moveEvent.clientY
-      setCurrentY(newY)
-      
-      const currentTime = getTimeFromY(newY)
-      
-      options?.onDragMove?.({
-        startTime,
-        currentTime,
-        startY,
-        currentY: newY
+    const onMouseMove = (e: MouseEvent) => {
+      e.preventDefault()
+
+      options?.onDragMove?.({ 
+        startTime, 
+        currentTime: getTimeFromY(e.clientY)
       })
+
+      setWasDragging(true)
     }
     
-    const onMouseUp = (upEvent: MouseEvent) => {
-      const endY = upEvent.clientY
-      const endTime = getTimeFromY(endY)
-      
-      options?.onDragEnd?.({
-        startTime,
-        endTime,
-        startY,
-        endY
+    const onMouseUp = (e: MouseEvent) => {
+      options?.onDragEnd?.({ 
+        startTime, 
+        endTime: getTimeFromY(e.clientY)
       })
       
       window.removeEventListener('mousemove', onMouseMove)
@@ -73,6 +54,7 @@ export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Da
       document.body.style.cursor = ''
       
       setIsDragging(false)
+      setTimeout(() => setWasDragging(false), 100)
     }
     
     window.addEventListener('mousemove', onMouseMove)
@@ -88,24 +70,5 @@ export function useDayDrag(columnRef: RefObject<HTMLDivElement | null>, date: Da
     }
   }, [getTimeFromY])
   
-  const dragTimes = useCallback(() => {
-    if (dragStartY === null || currentY === null) return null
-    
-    return {
-      startTime: getTimeFromY(dragStartY),
-      currentTime: getTimeFromY(currentY)
-    }
-  }, [dragStartY, currentY, getTimeFromY])
-  
-  return {
-    isDragging,
-    dragStartY,
-    currentY,
-    
-    startDrag,
-    dragTimes,
-    
-    dragStartTime: dragStartY !== null ? getTimeFromY(dragStartY) : null,
-    currentTime: currentY !== null ? getTimeFromY(currentY) : null
-  }
+  return { startDrag, isDragging, wasDragging }
 }
