@@ -1,32 +1,26 @@
 "use client"
 
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from "date-fns"
 import { useChronos, ChronosEvent, useDayEvents, useDateColors } from "./chronos"
 import { useMemo, useState, ReactNode } from "react"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
-import { cn, isSameDay } from "@/lib/utils"
 import { EventForm } from "./event-form"
 import { EventLine } from "./event-line"
 import { PlusIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 function useMonthDates() {
   const { selectedDate } = useChronos()
   
   return useMemo(() => {
-    const firstOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
-    const lastOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0)
+    const monthStart = startOfMonth(selectedDate)
+    const monthEnd = endOfMonth(selectedDate)
+    const calendarStart = startOfWeek(monthStart)
+    const calendarEnd = endOfWeek(monthEnd)
     
-    const prevMonthCount = firstOfMonth.getDay()
-    const nextMonthCount = (6 - lastOfMonth.getDay())
-    
-    const totalDays = prevMonthCount + lastOfMonth.getDate() + nextMonthCount
-    
-    return Array.from({ length: totalDays }, (_, i) => {
-      const date = new Date(firstOfMonth)
-      date.setDate(1 - prevMonthCount + i)
-      return date
-    })
+    return eachDayOfInterval({ start: calendarStart, end: calendarEnd })
   }, [selectedDate])
 }
 

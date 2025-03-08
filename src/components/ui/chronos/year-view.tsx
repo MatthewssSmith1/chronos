@@ -5,12 +5,13 @@ import { useChronos, useDateColors, useDayEvents } from "./chronos"
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { CaptionProps, DayPicker, DayProps } from "react-day-picker"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
-import { cn, isSameDay } from "@/lib/utils"
 import { EventLine } from "./event-line"
+import { isSameDay } from "date-fns"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 export function YearView() {
   const { selectedDate, setSelectedDate } = useChronos()
@@ -123,9 +124,9 @@ function Day({ date, displayMonth, onDayClick }: DayProps & { onDayClick: (day: 
       )}>
         {date.getDate()}
       </span>
-      <div className="absolute bottom-1/6 flex flex-row gap-0.5 pointer-events-none">
+      <div className="absolute bottom-1/6 flex flex-row gap-0.5 xl:gap-1 pointer-events-none">
         {events.filter((_, i) => i < 3).map((event) => (
-          <div key={event.id} className="size-[5px] bg-primary rounded-full" style={colorOfEvent(event)} />
+          <div key={event.id} className="size-[5px] xl:size-[6px] bg-primary rounded-full" style={colorOfEvent(event)} />
         ))}
       </div>
     </Button>

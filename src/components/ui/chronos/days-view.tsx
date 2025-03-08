@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useCallback, useRef, RefObject, useMemo, MouseEvent as ReactMouseEvent } from "react"
+import { startOfWeek, addDays, eachDayOfInterval, compareAsc, isSameDay } from "date-fns"
 import { useChronos, ChronosEvent, useDayEvents } from "./chronos"
-import { cn, isSameDay, timeAscending } from "@/lib/utils"
 import { EventBanner } from "./event-banner"
 import { useDayDrag } from "@/hooks/use-day-drag"
 import { DateHeader } from "./month-view"
 import { EventCard } from "./event-card"
 import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 export const PX_PER_HOUR = 65
 
@@ -21,16 +22,9 @@ export function WeekView() {
   const { selectedDate } = useChronos()
 
   const weekDates = useMemo(() => {
-    const dates = []
-    const firstDayOfWeek = new Date(selectedDate)
-    firstDayOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay())
-
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(firstDayOfWeek)
-      date.setDate(firstDayOfWeek.getDate() + i)
-      dates.push(date)
-    }
-    return dates
+    const start = startOfWeek(selectedDate)
+    const end = addDays(start, 6)
+    return eachDayOfInterval({ start, end })
   }, [selectedDate])
 
   return <DaysView dates={weekDates} className="grid-cols-[auto_repeat(7,_1fr)]" />
@@ -40,7 +34,7 @@ function DaysView({ dates, className }: { dates: Date[], className?: string }) {
   return (
     <Card className={cn(
       "relative flex-1 p-0 grid grid-rows-[auto_auto_1fr] gap-0 isolate overflow-y-auto overflow-x-hidden transition-colors", 
-      "[&:has(.new-event,.dragging)_.event-card]:pointer-events-none",
+      "[&:has(.new-event,.dragging)_.event-card:not(.new-event)]:pointer-events-none",
       className
     )}>
       <div className="row-start-1 row-end-2 col-start-1" />
@@ -83,7 +77,7 @@ function useCreateEventGestures(columnRef: RefObject<HTMLDivElement | null>, dat
     
     startDrag(e, {
       onDragMove: ({ startTime, currentTime }) => {
-        const [start, end] = [startTime, currentTime].sort(timeAscending)
+        const [start, end] = [startTime, currentTime].sort(compareAsc)
         
         setPreviewEvent({ 
           id: 'preview', 

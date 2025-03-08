@@ -2,6 +2,7 @@
 
 import { ChevronLeftIcon, ChevronRightIcon, CalendarPlusIcon, CheckIcon, CalendarFoldIcon, Columns2, Columns4, CalendarIcon, LayoutGrid } from "lucide-react"
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { format, startOfWeek, endOfWeek, isSameMonth } from "date-fns"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { useMemo, useState, ReactNode } from "react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -31,29 +32,23 @@ function TimePeriodText() {
   const { viewType, selectedDate } = useChronos()
 
   const text = useMemo(() => {
-    const fmtDate = (date: Date, opts: Intl.DateTimeFormatOptions) => date.toLocaleDateString('en-US', opts)
-
     switch (viewType) {
       case 'week': {
-        const start = new Date(selectedDate)
-        start.setDate(selectedDate.getDate() - selectedDate.getDay())
-        const end = new Date(start)
-        end.setDate(start.getDate() + 6)
+        const start = startOfWeek(selectedDate)
+        const end = endOfWeek(selectedDate)
 
-        if (start.getMonth() === end.getMonth())
-          return fmtDate(start, { month: 'long', year: 'numeric' })
+        if (isSameMonth(start, end))
+          return format(start, 'MMMM yyyy')
 
-        const startMonth = fmtDate(start, { month: 'short' })
-        const endMonth = fmtDate(end, { month: 'short' })
-        return `${startMonth} - ${endMonth} ${start.getFullYear()}`
+        return `${format(start, 'MMM')} - ${format(end, 'MMM')} ${format(start, 'yyyy')}`
       }
       case 'month':
-        return fmtDate(selectedDate, { month: 'long', year: 'numeric' })
+        return format(selectedDate, 'MMMM yyyy')
       case 'year':
-        return fmtDate(selectedDate, { year: 'numeric' })
+        return format(selectedDate, 'yyyy')
       case 'day':
       default:
-        return fmtDate(selectedDate, { month: 'long', day: 'numeric', year: 'numeric' })
+        return format(selectedDate, 'MMMM d, yyyy')
     }
   }, [viewType, selectedDate])
 

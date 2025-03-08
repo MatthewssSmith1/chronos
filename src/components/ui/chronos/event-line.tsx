@@ -2,7 +2,8 @@
 
 import { useChronos, ChronosEvent } from "./chronos"
 import { cva, type VariantProps } from "class-variance-authority"
-import { cn, formatTime } from "@/lib/utils"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 
 const lineVariants = cva(
   "flex flex-row items-center gap-1.5 rounded-md transition-all [&>*]:pointer-events-none",
@@ -32,7 +33,9 @@ export function EventLine({
         <div className="absolute inset-0 -z-10 opacity-10 rounded-md" style={colorOfEvent(event)} />
       )}
       <div className="rounded-md shrink-0 size-2" style={colorOfEvent(event)} />
-      <p className="text-muted-foreground hidden md:inline-block">{formatTime(event.start)}</p>
+      <p className="text-muted-foreground hidden lg:inline-block whitespace-nowrap">
+        {format(event.start, 'h:mma').toLowerCase().replaceAll(':00', '')}
+      </p>
       <p className={cn("truncate", variant === "compact" && "hidden sm:inline-block")}>
         {event.title}
         {event.location && <>{' @ '}{event.location}</>}

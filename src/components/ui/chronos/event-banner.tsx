@@ -1,7 +1,8 @@
 "use client"
 
 import { useChronos, useFullDayEvents, PositionedChronosEvent } from "./chronos"
-import { cn, isSameDay } from "@/lib/utils"
+import { isSameDay } from "date-fns"
+import { cn } from "@/lib/utils"
 
 const EVENT_HEIGHT = 25
 const EVENT_PADDING = 3

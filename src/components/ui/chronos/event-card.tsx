@@ -3,12 +3,12 @@
 import { useState, useCallback, RefObject, useEffect, CSSProperties, useMemo, MouseEvent as ReactMouseEvent } from "react"
 import { useChronos, ChronosEvent, PositionedChronosEvent } from "./chronos"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
-import { cn, formatTimeRange } from "@/lib/utils"
+import { compareAsc, format } from "date-fns"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
-import { timeAscending } from "@/lib/utils"
 import { PX_PER_HOUR } from "./days-view"
 import { useDayDrag } from "@/hooks/use-day-drag"
 import { EventForm } from "./event-form"
+import { cn } from "@/lib/utils"
 
 const EVENT_PADDING = 3
 
@@ -36,13 +36,6 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
   const endHours = event.end.getHours() + (event.end.getMinutes() / 60)
   const duration = (endHours - startHours + 24) % 24
 
-  function Subtitle() {
-    let text = formatTimeRange(event.start, event.end)
-    if (event.location) text += ` @ ${event.location}`
-
-    return <p className="text-left text-xs text-white truncate pointer-events-none">{text}</p>
-  }
-
   function DragHandle({ isTop }: {isTop: boolean}) {
     const onMouseDown = useCallback((e: ReactMouseEvent) => {
       if (!onEventChanged) return
@@ -51,7 +44,7 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
 
       startDrag(e, {
         onDragMove: ({ currentTime }) => {
-          const [newStart, newEnd] = [otherTime, currentTime].sort(timeAscending)
+          const [newStart, newEnd] = [otherTime, currentTime].sort(compareAsc)
 
           if (isNew) 
             return onEventChanged({ ...event, start: newStart, end: newEnd })
@@ -59,7 +52,7 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
           setEvent({ ...event, start: newStart, end: newEnd })
         },
         onDragEnd: ({ endTime }) => {
-          const [newStart, newEnd] = [otherTime, endTime].sort(timeAscending)
+          const [newStart, newEnd] = [otherTime, endTime].sort(compareAsc)
 
           onEventChanged({ 
             ...event,
@@ -164,11 +157,11 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
           className={cn(
             "event-card absolute rounded-md px-1.5 py-1 overflow-hidden cursor-pointer select-none transition-[filter,box-shadow,opacity] hover:brightness-110 hover:shadow-sm ", 
             isNew && "new-event hover:brightness-100 shadow-sm",
-            (isDragging || isDraggingSelf) ? "dragging pointer-events-none z-50 opacity-90 shadow-lg" : "z-40"
+            (isDragging || isDraggingSelf) ? "dragging pointer-events-none z-40 opacity-90 shadow-lg" : "z-30"
           )}
         >
           <p className="text-left text-sm text-white truncate pointer-events-none font-medium">{event.title?.length ? event.title : "(No title)"}</p>
-          {duration > 0.5 && <Subtitle />}
+          {duration > 0.5 && <Subtitle event={event} />}
           <DragHandle isTop={true} />
           <DragHandle isTop={false} />
         </div>
@@ -187,4 +180,15 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
       />
     </Popover>
   )
+}
+
+
+function Subtitle({ event }: { event: ChronosEvent }) {
+  const showStartPeriod = (event.start.getHours() >= 12) !== (event.end.getHours() >= 12)
+  let text = `${format(event.start, showStartPeriod ? 'h:mma' : 'h:mm')} - ${format(event.end, 'h:mma')}`
+  text = text.toLowerCase().replaceAll(':00', '')
+
+  if (event.location) text += ` @ ${event.location}`
+
+  return <p className="text-left text-xs text-white truncate pointer-events-none">{text}</p>
 }

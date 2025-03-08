@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect, useMemo, useContext, useCallback, createContext, ReactNode, CSSProperties } from "react"
+import { addDays, addWeeks, addMonths, addYears, areIntervalsOverlapping, isSameDay } from "date-fns"
 import { DayView, WeekView } from "./days-view"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { ChronosControls } from "./chronos-controls"
-import { cn, isSameDay } from "@/lib/utils"
 import { MonthView } from "./month-view"
 import { YearView } from "./year-view"
+import { cn } from "@/lib/utils"
 
 export type ChronosCategory = {
   id: string
@@ -132,23 +133,18 @@ export function ChronosProvider({
 
   const offsetPeriod = useCallback((direction: number) => {
     setSelectedDate((currentDate) => {
-      const newDate = new Date(currentDate)
-
       switch (viewType) {
         case "day":
-          newDate.setDate(currentDate.getDate() + direction)
-          break
+          return addDays(currentDate, direction)
         case "week":
-          newDate.setDate(currentDate.getDate() + (7 * direction))
-          break
+          return addWeeks(currentDate, direction)
         case "month":
-          newDate.setMonth(currentDate.getMonth() + direction, 1)
-          break
+          return addMonths(currentDate, direction)
         case "year":
-          newDate.setFullYear(currentDate.getFullYear() + direction, 0, 1)
-          break
+          return addYears(currentDate, direction)
+        default:
+          return currentDate
       }
-      return newDate
     })
   }, [viewType, setSelectedDate])
 
@@ -261,8 +257,6 @@ export function useDayEvents(date: Date, previewEvent: ChronosEvent | null = nul
   }, [allEvents, date, previewEvent])
 }
 
-const eventsOverlap = (a: ChronosEvent, b: ChronosEvent) => a.start < b.end && b.start < a.end
-
 function calculateEventLayout(events: ChronosEvent[]): PositionedChronosEvent[] {
   if (events.length === 0) return [];
 
@@ -279,7 +273,7 @@ function calculateEventLayout(events: ChronosEvent[]): PositionedChronosEvent[] 
     const overlaps = new Set<PositionedChronosEvent>();
     
     positionedEvents.forEach(otherEvent => {
-      if (otherEvent !== event && eventsOverlap(event, otherEvent)) {
+      if (otherEvent !== event && areIntervalsOverlapping(event, otherEvent)) {
         overlaps.add(otherEvent);
       }
     });
@@ -329,7 +323,7 @@ function calculateEventLayout(events: ChronosEvent[]): PositionedChronosEvent[] 
           placed = true;
         } else {
           const overlapsWithColumn = columns[channelIndex].some(
-            columnEvent => eventsOverlap(event, columnEvent)
+            columnEvent => areIntervalsOverlapping(event, columnEvent)
           );
           
           if (!overlapsWithColumn) {
