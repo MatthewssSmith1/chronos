@@ -1,8 +1,9 @@
 "use client"
 
-import { ChevronLeftIcon, ChevronRightIcon, CalendarPlusIcon, CheckIcon, CalendarFoldIcon } from "lucide-react"
-import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ChevronLeftIcon, ChevronRightIcon, CalendarPlusIcon, CheckIcon, CalendarFoldIcon, Columns2, Columns4, CalendarIcon, LayoutGrid } from "lucide-react"
+import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select" 
 import { useMemo, useState, ReactNode } from "react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SegmentGroup, ButtonSegment } from "./segmented-button"
 import { useChronos, ViewType, VIEWS } from "./chronos"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
@@ -19,6 +20,7 @@ export function ChronosControls() {
       <DateNavigator />
       <div className="flex-1 inline-block -mx-1" />
       <ViewSelect />
+      <ViewTabs />
       <NewEventButton />
     </div>
   )
@@ -89,8 +91,8 @@ function ViewSelect() {
     setTimeout(() => document.getElementById("new-event-button")?.click(), 10)
 
   return (
-    <Select value={viewType} onValueChange={setViewType} open={open} onOpenChange={setOpen}>
-      <SelectTrigger className="w-28">
+    <Select value={viewType} onValueChange={setViewType} open={open} onOpenChange={setOpen} >
+      <SelectTrigger className="w-28 lg:hidden">
         <SelectValue placeholder="Select a view" />
       </SelectTrigger>
       <SelectContent>
@@ -132,6 +134,38 @@ function ViewOption({ view }: { view: ViewType }) {
       </SelectPrimitive.ItemText>
       <span className="ml-auto text-muted-foreground/70 w-3 text-center">{view.charAt(0)}</span>
     </SelectPrimitive.Item>
+  )
+}
+
+function ViewTabs() {
+  const { viewType, setViewType } = useChronos()
+
+  const icons = {
+    day: Columns2,
+    week: Columns4,
+    month: CalendarIcon,
+    year: LayoutGrid
+  }
+
+  return (
+    <Tabs defaultValue={viewType} onValueChange={view => setViewType(view as ViewType)} className="hidden lg:inline-block">
+      <TabsList className="h-11 gap-2">
+        {VIEWS.map((view, idx) => {
+          const Icon = icons[view]
+          return (
+            <TabsTrigger key={idx} value={view} className="h-9 px-2.5 flex items-center gap-0 capitalize">
+              <span className={cn(
+                "relative overflow-hidden transition-all ease-in-out flex items-center justify-center",
+                viewType === view ? "w-5 mr-2 opacity-100" : "w-0 mr-0 opacity-0"
+              )}>
+                <Icon className="min-w-5" />
+              </span>
+              {view}
+            </TabsTrigger>
+          )
+        })}
+      </TabsList>
+    </Tabs>
   )
 }
 
