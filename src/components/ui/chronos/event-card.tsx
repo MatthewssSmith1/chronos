@@ -130,10 +130,10 @@ export function EventCard({ event: initialEvent, columnRef, onEventChanged, isNe
     let left = `${EVENT_PADDING}px`;
     let right = `${EVENT_PADDING}px`;
 
-    if (event.numColumns > 1) {
-      const idx = event.columnIndex
-      const columnWidth = 1 / event.numColumns;
-      const [isFirstCol, isLastCol] = [idx === 0, idx === event.numColumns - 1]
+    if (event.numChannels > 1) {
+      const idx = event.channelIndex
+      const columnWidth = 1 / event.numChannels;
+      const [isFirstCol, isLastCol] = [idx === 0, idx === event.numChannels - 1]
 
       const leftPercent = idx * columnWidth * 100;
       left = `calc(${leftPercent}% + ${EVENT_PADDING / (isFirstCol ? 1 : 2)}px)`;

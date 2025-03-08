@@ -3,12 +3,13 @@
 import { useState, useCallback, useRef, RefObject, useMemo, MouseEvent as ReactMouseEvent } from "react"
 import { useChronos, ChronosEvent, useDayEvents } from "./chronos"
 import { cn, isSameDay, timeAscending } from "@/lib/utils"
+import { EventBanner } from "./event-banner"
 import { useDayDrag } from "@/hooks/use-day-drag"
 import { DateHeader } from "./month-view"
 import { EventCard } from "./event-card"
 import { Card } from "@/components/ui/card"
 
-export const PX_PER_HOUR = 75
+export const PX_PER_HOUR = 65
 
 export function DayView() {
   const { selectedDate } = useChronos()
@@ -38,14 +39,15 @@ export function WeekView() {
 function DaysView({ dates, className }: { dates: Date[], className?: string }) {
   return (
     <Card className={cn(
-      "relative flex-1 p-0 grid grid-rows-[auto_1fr] gap-0 isolate overflow-y-auto overflow-x-hidden transition-colors", 
+      "relative flex-1 p-0 grid grid-rows-[auto_auto_1fr] gap-0 isolate overflow-y-auto overflow-x-hidden transition-colors", 
       "[&:has(.new-event,.dragging)_.event-card]:pointer-events-none",
       className
     )}>
-      <div className="row-start-1 col-start-1" />
+      <div className="row-start-1 row-end-2 col-start-1" />
       {dates.map((date, idx) => (
-        <DateHeader key={idx} date={date} className="sticky top-0 z-50 py-2 bg-background/80 border-b" />
+        <DateHeader key={idx} date={date} className="sticky top-0 z-50 h-14 pt-2 bg-background/80 scale-x-[1.01]" /> // scale-x removes gridline artifact under headers
       ))}
+      <EventBanner dates={dates} />
       <TimeColumn />
       {dates.map((date, idx) => <DayColumn date={date} key={idx} />)}
     </Card>

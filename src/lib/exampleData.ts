@@ -801,5 +801,155 @@ export const EVENTS: ChronosEvent[] = [
     description: "Regular haircut",
     categoryId: "2",
     location: "Style Studio"
+  },
+  {
+    id: "87",
+    title: "Spring Tech Conference",
+    start: new Date("2025-03-03T12:00:00"),
+    end: new Date("2025-03-05T12:00:00"),
+    allDay: true,
+    description: "Annual technology conference with workshops and networking",
+    categoryId: "1",
+    location: "Convention Center"
+  },
+  {
+    id: "88",
+    title: "Family Reunion",
+    start: new Date("2025-03-08T12:00:00"),
+    end: new Date("2025-03-10T12:00:00"),
+    allDay: true,
+    description: "Annual family gathering with relatives from across the country",
+    categoryId: "5",
+    location: "Grandparents' Farm"
+  },
+  {
+    id: "89",
+    title: "Home Renovation",
+    start: new Date("2025-03-12T12:00:00"),
+    end: new Date("2025-03-15T12:00:00"),
+    allDay: true,
+    description: "Kitchen remodeling project",
+    categoryId: "2",
+    location: "Home"
+  },
+  {
+    id: "90",
+    title: "Charity Fundraiser",
+    start: new Date("2025-03-17T12:00:00"),
+    end: new Date("2025-03-17T12:00:00"),
+    allDay: true,
+    description: "Annual fundraising event for local children's hospital",
+    categoryId: "3",
+    location: "City Park"
+  },
+  {
+    id: "91",
+    title: "Wellness Retreat",
+    start: new Date("2025-03-21T12:00:00"),
+    end: new Date("2025-03-23T12:00:00"),
+    allDay: true,
+    description: "Weekend meditation and yoga retreat",
+    categoryId: "4",
+    location: "Mountain View Resort"
+  },
+  {
+    id: "92",
+    title: "Product Launch",
+    start: new Date("2025-03-25T12:00:00"),
+    end: new Date("2025-03-25T12:00:00"),
+    allDay: true,
+    description: "New product line launch event",
+    categoryId: "1",
+    location: "Company Headquarters"
+  },
+  {
+    id: "93",
+    title: "School Holiday",
+    start: new Date("2025-03-27T12:00:00"),
+    end: new Date("2025-03-27T12:00:00"),
+    allDay: true,
+    description: "Kids' day off from school",
+    categoryId: "5",
+    location: "Home"
+  },
+  {
+    id: "94",
+    title: "Industry Trade Show",
+    start: new Date("2025-03-18T12:00:00"),
+    end: new Date("2025-03-20T12:00:00"),
+    allDay: true,
+    description: "Networking and showcasing at annual industry event",
+    categoryId: "1",
+    location: "Expo Center"
+  },
+  {
+    id: "95",
+    title: "Home Maintenance Day",
+    start: new Date("2025-03-22T12:00:00"),
+    end: new Date("2025-03-22T12:00:00"),
+    allDay: true,
+    description: "Seasonal home maintenance tasks",
+    categoryId: "2",
+    location: "Home"
+  },
+  {
+    id: "96",
+    title: "Volunteer Work",
+    start: new Date("2025-03-29T12:00:00"),
+    end: new Date("2025-03-29T12:00:00"),
+    allDay: true,
+    description: "Community garden planting day",
+    categoryId: "3",
+    location: "Community Garden"
+  },
+  {
+    id: "97",
+    title: "Medical Check-up",
+    start: new Date("2025-03-14T12:00:00"),
+    end: new Date("2025-03-14T12:00:00"),
+    allDay: true,
+    description: "Annual physical examination",
+    categoryId: "4",
+    location: "Medical Center"
+  },
+  {
+    id: "98",
+    title: "Spring Break",
+    start: new Date("2025-03-24T12:00:00"),
+    end: new Date("2025-03-28T12:00:00"),
+    allDay: true,
+    description: "Kids' spring break from school",
+    categoryId: "5",
+    location: "Various"
+  },
+  {
+    id: "99",
+    title: "Business Strategy Planning",
+    start: new Date("2025-03-06T12:00:00"),
+    end: new Date("2025-03-07T12:00:00"),
+    allDay: true,
+    description: "Quarterly strategy planning sessions",
+    categoryId: "1",
+    location: "Corporate Retreat Center"
+  },
+  {
+    id: "100",
+    title: "House Hunting Weekend",
+    start: new Date("2025-03-15T12:00:00"),
+    end: new Date("2025-03-16T12:00:00"),
+    allDay: true,
+    description: "Viewing potential new homes with realtor",
+    categoryId: "2",
+    location: "Various Neighborhoods"
+  },
+  {
+    id: "101",
+    title: "Music Festival",
+    start: new Date("2025-03-06T12:00:00"),
+    end: new Date("2025-03-10T12:00:00"),
+    allDay: true,
+    description: "Annual spring music festival featuring local and national acts",
+    categoryId: "3",
+    location: "Riverside Park"
   }
 ]

@@ -143,7 +143,7 @@ export function DateHeader({ date, hideWeekday = false, className }: { date: Dat
   }
 
   return (
-    <button onClick={onClick} className={cn("flex flex-col cursor-pointer hover:bg-muted/80 active:bg-muted transition-colors", className)}>
+    <button onClick={onClick} className={cn("group/header flex flex-col justify-center cursor-pointer outline-none", className)}>
       {!hideWeekday && <WeekdayText />}
       <DateText />
     </button>

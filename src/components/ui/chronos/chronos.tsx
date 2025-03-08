@@ -25,7 +25,7 @@ export type ChronosEvent = {
   categoryId?: string
 }
 
-export type PositionedChronosEvent = ChronosEvent & { columnIndex: number, numColumns: number }
+export type PositionedChronosEvent = ChronosEvent & { channelIndex: number, numChannels: number }
 
 export const VIEWS = ["day", "week", "month", "year"] as const
 export type ViewType = typeof VIEWS[number]
@@ -235,12 +235,21 @@ export function useChronos() {
 export function useDateColors(date: Date) {
   const { selectedDate } = useChronos()
 
-  if (isSameDay(date, selectedDate)) return "bg-primary/80 hover:bg-primary/90 !text-primary-foreground"
-  else if (isSameDay(date, new Date())) return "bg-primary/20 hover:bg-primary/30"
+  if (isSameDay(date, selectedDate)) return "bg-primary/80 hover:bg-primary/90 group-hover/header:bg-primary/90 active:bg-primary/85 !text-primary-foreground"
+  else if (isSameDay(date, new Date())) return "bg-primary/20 hover:bg-primary/30 group-hover/header:bg-primary/30"
 
-  return ""
+  return "group-hover/header:bg-primary/10 group-focus/header:bg-primary/10 group-active/header:bg-primary/20"
 }
 
+export function useFullDayEvents(start: Date, end: Date) {
+  const { events: allEvents } = useChronos()
+
+  return useMemo(() => calculateEventLayout(allEvents.filter(
+    e => e.allDay && e.end >= start && e.start <= end
+  )), [allEvents, start, end])
+}
+
+// TODO: don't calculateEventLayout on year and month views
 export function useDayEvents(date: Date, previewEvent: ChronosEvent | null = null) {
   const { events: allEvents } = useChronos()
 
@@ -248,7 +257,7 @@ export function useDayEvents(date: Date, previewEvent: ChronosEvent | null = nul
     let events = [...allEvents]
     if (previewEvent) events.push(previewEvent)
 
-    return calculateEventLayout(events.filter(event => isSameDay(event.start, date)))
+    return calculateEventLayout(events.filter(event => !event.allDay && isSameDay(event.start, date)))
   }, [allEvents, date, previewEvent])
 }
 
@@ -259,8 +268,8 @@ function calculateEventLayout(events: ChronosEvent[]): PositionedChronosEvent[] 
 
   const positionedEvents: PositionedChronosEvent[] = events.map(event => ({
     ...event,
-    columnIndex: 0,
-    numColumns: 1
+    channelIndex: 0,
+    numChannels: 1
   }));
 
   // Find all events that overlap with each event
@@ -310,35 +319,35 @@ function calculateEventLayout(events: ChronosEvent[]): PositionedChronosEvent[] 
     
     group.forEach(event => {
       // Find first column where the event doesn't overlap with any existing event
-      let columnIndex = 0;
+      let channelIndex = 0;
       let placed = false;
       
       while (!placed) {
-        if (!columns[columnIndex]) {
-          columns[columnIndex] = [event];
-          event.columnIndex = columnIndex;
+        if (!columns[channelIndex]) {
+          columns[channelIndex] = [event];
+          event.channelIndex = channelIndex;
           placed = true;
         } else {
-          const overlapsWithColumn = columns[columnIndex].some(
+          const overlapsWithColumn = columns[channelIndex].some(
             columnEvent => eventsOverlap(event, columnEvent)
           );
           
           if (!overlapsWithColumn) {
-            columns[columnIndex].push(event);
-            event.columnIndex = columnIndex;
+            columns[channelIndex].push(event);
+            event.channelIndex = channelIndex;
             placed = true;
           } else {
-            columnIndex++;
+            channelIndex++;
           }
         }
       }
     });
     
-    const maxColumn = Math.max(...group.map(event => event.columnIndex));
+    const maxColumn = Math.max(...group.map(event => event.channelIndex));
     const totalColumns = maxColumn + 1;
     
     group.forEach(event => {
-      event.numColumns = totalColumns;
+      event.numChannels = totalColumns;
     });
   });
   
