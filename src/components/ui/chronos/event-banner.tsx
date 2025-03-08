@@ -1,6 +1,7 @@
 "use client"
 
-import { useChronos, useFullDayEvents, PositionedChronosEvent } from "./chronos"
+import { useChronos, PositionedChronosEvent } from "./chronos"
+import { useFullDayEvents } from "@/hooks/use-events"
 import { isSameDay } from "date-fns"
 import { cn } from "@/lib/utils"
 

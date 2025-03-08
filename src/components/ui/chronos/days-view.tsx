@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useRef, RefObject, useMemo, MouseEvent as ReactMouseEvent } from "react"
 import { startOfWeek, addDays, eachDayOfInterval, compareAsc, isSameDay } from "date-fns"
-import { useChronos, ChronosEvent, useDayEvents } from "./chronos"
+import { useChronos, ChronosEvent } from "./chronos"
+import { useDayEvents } from "@/hooks/use-events"
 import { EventBanner } from "./event-banner"
 import { useDayDrag } from "@/hooks/use-day-drag"
 import { DateHeader } from "./month-view"
