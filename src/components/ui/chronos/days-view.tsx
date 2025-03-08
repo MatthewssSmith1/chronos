@@ -45,7 +45,7 @@ function DaysView({ dates, className }: { dates: Date[], className?: string }) {
     )}>
       <div className="row-start-1 row-end-2 col-start-1" />
       {dates.map((date, idx) => (
-        <DateHeader key={idx} date={date} className="sticky top-0 z-50 h-14 pt-2 bg-background/80 scale-x-[1.01]" /> // scale-x removes gridline artifact under headers
+        <DateHeader key={idx} date={date} className="sticky top-0 z-50 h-16 pt-2 bg-background/80 scale-x-[1.01]" /> // scale-x removes gridline artifact under headers
       ))}
       <EventBanner dates={dates} />
       <TimeColumn />

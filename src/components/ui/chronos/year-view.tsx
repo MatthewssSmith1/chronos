@@ -1,5 +1,6 @@
 "use client"
 
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { useChronos, useDateColors, useDayEvents } from "./chronos"
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { CaptionProps, DayPicker, DayProps } from "react-day-picker"
@@ -28,7 +29,7 @@ export function YearView() {
 
   return (
     <>
-      <Card className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-[3vw] py-4 lg:py-[4vh] sm:px-[2vw] overflow-y-auto">
+      <Card className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 sm:gap-[3vw] py-8 lg:py-[4vh] sm:px-[2vw] overflow-y-auto">
         {months.map((month, idx) => (
           <Calendar key={idx} month={month} onDayClick={handleDayClick} />
         ))}
@@ -52,6 +53,9 @@ function Calendar({ month, onDayClick }: { month: Date, onDayClick: (day: Date, 
 
   const formatWeekdayName = (date: Date) => date.toLocaleDateString("en-US", { weekday: "short" }).charAt(0)
 
+  const cellWidth = "w-[calc(1rem+6vw)] sm:w-[calc(1rem+1.5vw)] min-w-8"
+  const cellHeight = "h-[calc(1rem+6vw)] sm:h-[calc(1rem+1.45vw)] min-h-8"
+
   return (
     <DayPicker
       month={month}
@@ -61,9 +65,9 @@ function Calendar({ month, onDayClick }: { month: Date, onDayClick: (day: Date, 
         month: "flex flex-col gap-4",
         table: "mx-auto border-collapse space-x-1",
         head_row: "flex",
-        head_cell: "text-muted-foreground rounded-md w-[calc(1rem+1.5vw)] min-w-8 font-normal text-[0.8rem] pointer-events-none",
-        row: "flex w-full mt-2",
-        cell: "relative p-0 text-sm focus-within:z-20 transition-colors w-[calc(1rem+1.5vw)] min-w-8 h-[calc(1rem+1.45vw)] min-h-8",
+        head_cell: cn("text-muted-foreground rounded-md font-normal text-[0.8rem] pointer-events-none", cellWidth),
+        row: "flex w-full mt-1 sm:mt-2",
+        cell: cn("relative p-0 text-sm focus-within:z-20 transition-colors", cellWidth, cellHeight),
       }}
       components={{
         Day: (props) => <Day {...props} onDayClick={onDayClick} />,
@@ -83,9 +87,16 @@ function MonthTitle({ displayMonth }: CaptionProps) {
 
   return (
     <div className="w-full flex flex-row justify-center items-center">
-      <Button variant="ghost" className="p-0 px-4 transition-all hover:shadow-sm text-lg font-semibold" onClick={onClick}>
-        {displayMonth.toLocaleDateString("en-US", { month: "long" })}
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" className="p-0 px-4 transition-all hover:shadow-sm text-lg font-semibold" onClick={onClick}>
+            {displayMonth.toLocaleDateString("en-US", { month: "long" })}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          Open {displayMonth.toLocaleDateString("en-US", { month: "long" })}
+        </TooltipContent>
+      </Tooltip>
     </div>
   )
 }

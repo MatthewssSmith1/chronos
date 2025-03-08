@@ -1,7 +1,8 @@
 "use client"
 
 import { ChevronLeftIcon, ChevronRightIcon, CalendarPlusIcon, CheckIcon, CalendarFoldIcon, Columns2, Columns4, CalendarIcon, LayoutGrid } from "lucide-react"
-import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select" 
+import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { useMemo, useState, ReactNode } from "react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SegmentGroup, ButtonSegment } from "./segmented-button"
@@ -60,15 +61,15 @@ function TimePeriodText() {
 }
 
 function DateNavigator() {
-  const { offsetPeriod, goToToday } = useChronos()
+  const { offsetPeriod, goToToday, viewType } = useChronos()
 
   return (
     <SegmentGroup>
-      <ButtonSegment onClick={() => offsetPeriod(-1)}>
+      <ButtonSegment onClick={() => offsetPeriod(-1)} tooltip={`Previous ${viewType}`}>
         <ChevronLeftIcon className="size-4 pointer-events-none shrink-0" />
       </ButtonSegment>
-      <ButtonSegment onClick={goToToday} className="hidden sm:inline-block">Today</ButtonSegment>
-      <ButtonSegment onClick={() => offsetPeriod(1)}>
+      <ButtonSegment onClick={goToToday} className="hidden sm:inline-block" tooltip="Go to today">Today</ButtonSegment>
+      <ButtonSegment onClick={() => offsetPeriod(1)} tooltip={`Next ${viewType}`}>
         <ChevronRightIcon className="size-4 pointer-events-none shrink-0" />
       </ButtonSegment>
     </SegmentGroup>
@@ -87,7 +88,7 @@ function ViewSelect() {
     return <Button onClick={handleClick} variant="ghost" size="sm" className="px-1 font-normal text-left">{children}</Button>
   }
 
-  const openEventForm = () => 
+  const openEventForm = () =>
     setTimeout(() => document.getElementById("new-event-button")?.click(), 10)
 
   return (
@@ -153,15 +154,25 @@ function ViewTabs() {
         {VIEWS.map((view, idx) => {
           const Icon = icons[view]
           return (
-            <TabsTrigger key={idx} value={view} className="h-9 px-2.5 flex items-center gap-0 capitalize">
-              <span className={cn(
-                "relative overflow-hidden transition-all ease-in-out flex items-center justify-center",
-                viewType === view ? "w-5 mr-2 opacity-100" : "w-0 mr-0 opacity-0"
-              )}>
-                <Icon className="min-w-5" />
-              </span>
-              {view}
-            </TabsTrigger>
+            <Tooltip key={idx}>
+              <TooltipTrigger asChild>
+                <TabsTrigger value={view} className={cn(
+                  "h-9 pl-2.5 pr-3 flex items-center gap-0 capitalize",
+                  viewType === view && "bg-background text-accent-foreground"
+                )}>
+                  <span className={cn(
+                    "relative overflow-hidden transition-all ease-in-out flex items-center justify-center",
+                    viewType === view ? "w-5 mr-2 opacity-100" : "w-0 mr-0 opacity-0"
+                  )}>
+                    <Icon className="min-w-5" />
+                  </span>
+                  {view}
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                {view.charAt(0).toUpperCase() + view.slice(1)} view <span className="ml-1 text-muted-foreground font-bold">{view.charAt(0)}</span>
+              </TooltipContent>
+            </Tooltip>
           )
         })}
       </TabsList>
@@ -175,15 +186,22 @@ function NewEventButton() {
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button id="new-event-button" className="absolute sm:static right-0 sm:flex gap-2 opacity-0 sm:opacity-100 pointer-events-none sm:pointer-events-auto">
-          <CalendarPlusIcon />
-          <span className="hidden sm:inline">New event</span>
-        </Button>
-      </PopoverTrigger>
-      <EventForm 
-        align="end" 
-        alignOffset={-8} 
+      <Tooltip>
+        <PopoverTrigger asChild>
+          <TooltipTrigger asChild>
+            <Button id="new-event-button" className="absolute sm:static right-0 sm:flex gap-2 opacity-0 sm:opacity-100 pointer-events-none sm:pointer-events-auto">
+              <CalendarPlusIcon />
+              <span className="hidden sm:inline">New event</span>
+            </Button>
+          </TooltipTrigger>
+        </PopoverTrigger>
+        <TooltipContent>
+          Create new event
+        </TooltipContent>
+      </Tooltip>
+      <EventForm
+        align="end"
+        alignOffset={-8}
         onSubmitEvent={event => {
           createEvent(event)
           setIsOpen(false)

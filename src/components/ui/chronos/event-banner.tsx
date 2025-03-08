@@ -13,7 +13,7 @@ export function EventBanner({dates}: {dates: Date[]}) {
   return (
     <div 
       style={{ height: `${Math.max(...events.map(e => e.numChannels)) * (EVENT_HEIGHT + EVENT_PADDING * 2)}px` }} 
-      className="sticky top-14 min-h-2 z-50 col-start-2 -col-end-1 h-min bg-background/80 box-content border-b" 
+      className="sticky top-16 min-h-2 z-50 col-start-2 -col-end-1 h-min bg-background/80 box-content border-b" 
     >
       {events.map(event => <FullDayEvent key={event.id} event={event} firstDate={firstDate} lastDate={lastDate} />)}
     </div>
@@ -42,7 +42,7 @@ function FullDayEvent({event, firstDate, lastDate}: {event: PositionedChronosEve
     <div 
       style={style} 
       className={cn(
-        "absolute content-[''] flex items-center px-2 transition-all cursor-pointer hover:shadow-md hover:brightness-110",
+        "absolute content-[''] flex items-center px-2 transition-[box-shadow,brightness] cursor-pointer hover:shadow-md hover:brightness-110",
         !isStartCutOff && "rounded-l-md",
         !isEndCutOff && "rounded-r-md"
       )}
