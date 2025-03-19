@@ -1,10 +1,11 @@
 "use client"
 
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
-import { useChronos, useDateColors, useDayEvents } from "./chronos"
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { CaptionProps, DayPicker, DayProps } from "react-day-picker"
+import { useChronos, useDateColors } from "./chronos"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
+import { useDayEvents } from "@/hooks/use-events"
 import { EventLine } from "./event-line"
 import { isSameDay } from "date-fns"
 import { useState } from "react"

@@ -1,9 +1,10 @@
 "use client"
 
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from "date-fns"
-import { useChronos, ChronosEvent, useDayEvents, useDateColors } from "./chronos"
+import { useChronos, ChronosEvent, useDateColors } from "./chronos"
 import { useMemo, useState, ReactNode } from "react"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
+import { useDayEvents } from "@/hooks/use-events"
 import { EventForm } from "./event-form"
 import { EventLine } from "./event-line"
 import { PlusIcon } from "lucide-react"

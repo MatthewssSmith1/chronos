@@ -355,12 +355,12 @@ export const EVENTS: ChronosEvent[] = [
   },
   {
     id: "37",
-    title: "Massage Appointment",
+    title: "Dentist Checkup",
     start: new Date("2025-02-18T16:00:00"),
     end: new Date("2025-02-18T17:00:00"),
-    description: "Monthly relaxation massage",
+    description: "Biannual teeth cleaning and exam",
     categoryId: "4",
-    location: "Wellness Spa"
+    location: "Bright Smile Dental"
   },
   {
     id: "38",

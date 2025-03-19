@@ -153,7 +153,7 @@ function ViewTabs() {
               <TooltipTrigger asChild>
                 <TabsTrigger value={view} className={cn(
                   "h-9 pl-2.5 pr-3 flex items-center gap-0 capitalize",
-                  viewType === view && "bg-background text-accent-foreground"
+                  viewType === view ? "bg-background text-accent-foreground" : "hover:bg-background/70"
                 )}>
                   <span className={cn(
                     "relative overflow-hidden transition-all ease-in-out flex items-center justify-center",
