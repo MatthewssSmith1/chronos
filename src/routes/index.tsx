@@ -1,13 +1,16 @@
 import { Chronos, ChronosEvent, ChronosProvider } from '@/components/ui/chronos/chronos'
-import { EVENTS, CATEGORIES } from '@/lib/exampleData'
+import { CATEGORIES } from '@/lib/exampleData'
 import { createFileRoute } from '@tanstack/react-router'
+import { useShiftedEvents } from '@/hooks/use-shifted-events'
 
 export const Route = createFileRoute('/')({
   component: HomeComponent,
 })
 
 function HomeComponent() {
-    // placeholder for API calls, simulating a delay
+  const shiftedEvents = useShiftedEvents();
+  
+  // placeholder for API calls, simulating a delay
   const handleCreateEvent = async (event: ChronosEvent): Promise<ChronosEvent> => {
     console.log("Create event:", event);
 
@@ -33,7 +36,7 @@ function HomeComponent() {
   return (
     <div className="h-screen">
       <ChronosProvider 
-        initialEvents={EVENTS} 
+        initialEvents={shiftedEvents} 
         categories={CATEGORIES} 
         onCreateEvent={handleCreateEvent} 
         onEditEvent={handleEditEvent} 
